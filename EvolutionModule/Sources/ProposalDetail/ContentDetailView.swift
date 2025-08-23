@@ -1,4 +1,4 @@
-import EvolutionCore
+import EvolutionModel
 import EvolutionUI
 import SwiftUI
 
@@ -10,7 +10,7 @@ struct ContentDetailView: View {
     /// 詳細画面のNavigationPath
     @State private var detailPath = NavigationPath()
     /// 表示する値
-    let markdown: Markdown
+    let proposal: Proposal.Snapshot
     /// 水平サイズクラス
     let horizontal: UserInterfaceSizeClass?
     /// アクセントカラー（ ナビゲーションスタックにスタックされるごとに変更する ）
@@ -22,29 +22,34 @@ struct ContentDetailView: View {
     var body: some View {
         NavigationStack(path: $detailPath) {
             // Root
-            detail(markdown: markdown)
+            detail(proposal: proposal)
         }
-        .navigationDestination(for: Markdown.self) { markdown in
+        .navigationDestination(for: Proposal.Snapshot.self) { proposal in
             // Destination
-            detail(markdown: markdown)
+            detail(proposal: proposal)
         }
     }
 
-    func detail(markdown: Markdown) -> some View {
-        ProposalDetailView(path: $detailPath, markdown: markdown, context: context)
-            .onChange(of: accentColor(markdown), initial: true) { _, color in
+    func detail(proposal: Proposal.Snapshot) -> some View {
+        ProposalDetailView(path: $detailPath, proposal: proposal, modelContainer: context.container)
+            .onChange(of: accentColor(proposal), initial: true) { _, color in
                 accentColor = color
             }
     }
 
-    func accentColor(_ markdown: Markdown) -> Color {
-        markdown.proposal.state?.color ?? .darkText
+    func accentColor(_ proposal: Proposal.Snapshot) -> Color {
+        Proposal.Status.State(proposal: proposal)?.color ?? .darkText
     }
 }
 
 #Preview(traits: .proposal) {
     ContentDetailView(
-        markdown: .fake0418,
+        proposal: .init(
+            id: "SE-0418",
+            link: "0418-inferring-sendable-for-methods.md",
+            status: .init(state: ".accepted"),
+            title: "Inferring Sendable for methods and key path literals"
+        ),
         horizontal: .compact,
         accentColor: .constant(.green)
     )

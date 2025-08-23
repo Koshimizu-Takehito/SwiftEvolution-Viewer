@@ -16,7 +16,6 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../EvolutionCore"),
         .package(path: "../EvolutionModel"),
         .package(path: "../EvolutionUI"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", .upToNextMinor(from: "0.6.0")),
@@ -29,7 +28,6 @@ let package = Package(
         .target(
             name: "EvolutionModule",
             dependencies: [
-                "EvolutionCore",
                 "EvolutionModel",
                 "EvolutionUI",
                 .product(name: "Markdown",   package: "swift-markdown"),

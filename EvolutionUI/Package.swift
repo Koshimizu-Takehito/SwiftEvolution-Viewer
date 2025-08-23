@@ -17,7 +17,6 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../EvolutionCore"),
         .package(path: "../EvolutionModel"),
         .package(url: "https://github.com/swiftlang/swift-markdown.git", .upToNextMinor(from: "0.6.0")),
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui", .upToNextMinor(from: "2.4.1")),
@@ -27,7 +26,6 @@ let package = Package(
         .target(
             name: "EvolutionUI",
             dependencies: [
-                "EvolutionCore",
                 "EvolutionModel",
                 .product(name: "Markdown",   package: "swift-markdown"),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),

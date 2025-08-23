@@ -1,9 +1,9 @@
-import EvolutionCore
+import EvolutionModel
 import SwiftUI
 
 @MainActor
 public struct FilterCommands {
-    @AppStorage var status: Set<ProposalStatus> = .allCases
+    @StatusFilter private var filter
     @AppStorage("isBookmarked") private var isBookmarked: Bool = false
 
     public init() {}
@@ -15,23 +15,25 @@ extension FilterCommands: Commands {
             Divider()
             Menu("レビューの状態") {
                 ForEach(0..<3, id: \.self) { index in
-                    let option = ProposalStatus.allCases[index]
-                    Toggle(option.description, isOn: $status.isOn(option))
+                    let option = Proposal.Status.State.allCases[index]
+                    Toggle(option.description, isOn: $filter(option))
+                    Toggle(option.description, isOn: .constant(false))
                         .keyboardShortcut(.init(Character("\(index + 1)")), modifiers: [.command])
                 }
 
                 Divider()
 
                 Button("すべて選択する") {
-                    status = Set(ProposalStatus.allCases)
+                    let allCases = Proposal.Status.State.allCases
+                    filter = .init(uniqueKeysWithValues: allCases.map { ($0, true) })
                 }
-                .disabled(status == Set(ProposalStatus.allCases))
+                .disabled(filter.values.allSatisfy(\.self))
                 .keyboardShortcut("A", modifiers: [.command, .shift])
 
                 Button("すべて非選択にする") {
-                    status = []
+                    filter = [:]
                 }
-                .disabled(status.isEmpty)
+                .disabled(filter.values.allSatisfy { !$0 })
                 .keyboardShortcut("D", modifiers: [.command, .shift])
             }
             Divider()

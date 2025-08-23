@@ -1,7 +1,6 @@
 import MarkdownUI
 import Splash
 import SwiftUI
-import EvolutionCore
 
 /// マークダウンの設定
 public struct MarkdownStyleModifier: ViewModifier {
