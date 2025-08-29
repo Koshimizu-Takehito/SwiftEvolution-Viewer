@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - NSViewRepresentable
 #if os(macOS)
+    /// Cross-platform alias that mirrors `UIViewRepresentable` on macOS by wrapping `NSViewRepresentable`.
     public protocol UIViewRepresentable: NSViewRepresentable where NSViewType == ViewType {
         associatedtype ViewType: NSView
         @MainActor

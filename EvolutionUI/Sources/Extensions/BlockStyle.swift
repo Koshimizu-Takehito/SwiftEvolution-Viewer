@@ -6,6 +6,7 @@ import SwiftUI
 
 @MainActor
 extension BlockStyle where Configuration == ListMarkerConfiguration {
+    /// A list marker that displays a small filled circle.
     public static var customCircle: Self {
         BlockStyle { _ in
             Circle()
@@ -14,6 +15,7 @@ extension BlockStyle where Configuration == ListMarkerConfiguration {
         }
     }
 
+    /// A list marker that renders ordered list numbers with monospaced digits.
     public static var customDecimal: Self {
         BlockStyle { configuration in
             Text("\(configuration.itemNumber).")

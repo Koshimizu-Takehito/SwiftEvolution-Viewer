@@ -5,6 +5,8 @@ struct MarkdownURL: RawRepresentable, Codable, Hashable, Sendable {
     /// The fully qualified URL of the markdown document.
     let rawValue: URL
 
+    /// Directly wraps an existing markdown URL.
+    /// - Parameter rawValue: Fully qualified URL to a markdown document.
     init(rawValue: URL) {
         self.rawValue = rawValue
     }

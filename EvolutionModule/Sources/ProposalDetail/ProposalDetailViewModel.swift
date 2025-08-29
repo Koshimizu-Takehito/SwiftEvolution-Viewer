@@ -10,32 +10,36 @@ import struct SwiftUI.Color
 @Observable
 @MainActor
 final class ProposalDetailViewModel: Observable {
-    /// プロポーザル
+    /// The proposal being displayed.
     private let proposal: Proposal.Snapshot
-    /// 表示用のコンテンツ（マークダウンを解析した結果）
+
+    /// Parsed markdown content for presentation.
     private(set) var items: [ProposalDetailRow] = []
-    /// マークダウン取得エラー
-    private(set) var fetcherror: Error?
-    /// 翻訳中
+
+    /// Error that occurred while fetching markdown text.
+    private(set) var fetchError: Error?
+
+    /// Indicates whether markdown is currently being translated.
     var translating: Bool = false
 
-    /// 画面のタイトル
+    /// Title for the navigation bar.
     var title: String {
         proposal.title
     }
 
+    /// Tint color based on the proposal's status.
     var tint: Color? {
         Proposal.Status.State(proposal: proposal)?.color
     }
 
-    /// ブックマークの状態
+    /// Bookmark state for the proposal.
     var isBookmarked: Bool = false {
         didSet {
             Task { await save(isBookmarked: isBookmarked) }
         }
     }
 
-    /// ModelContext
+    /// Model container used to access repositories.
     @ObservationIgnored private let modelContainer: ModelContainer
 
     init(proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
@@ -49,9 +53,9 @@ final class ProposalDetailViewModel: Observable {
         }
     }
 
-    /// マークダウンテキストを取得
+    /// Retrieves markdown text for the proposal.
     func loadMarkdown() async {
-        fetcherror = nil
+        fetchError = nil
         do {
             let repository = MarkdownRepository(modelContainer: modelContainer)
             let markdown = try await repository.fetch(proposal: proposal)
@@ -61,22 +65,23 @@ final class ProposalDetailViewModel: Observable {
         } catch is CancellationError {
             return
         } catch {
-            fetcherror = error
+            fetchError = error
         }
     }
 
+    /// Loads the current bookmark state from persistent storage.
     func loadBookmark() async {
         let repository = BookmarkRepository(modelContainer: modelContainer)
         isBookmarked = (await repository.load(proposalID: proposal.id) != nil)
     }
 
-
-    /// 当該プロポーザルのブックマークの有無を保存
+    /// Persists the bookmark state for this proposal.
     private func save(isBookmarked: Bool) async {
         let repository = BookmarkRepository(modelContainer: modelContainer)
         try? await repository.update(proposal: proposal, isBookmarked: isBookmarked)
     }
 
+    /// Translates the markdown contents in place.
     func translate() async throws {
         if items.isEmpty || translating {
             return
@@ -93,12 +98,14 @@ final class ProposalDetailViewModel: Observable {
 }
 
 extension ProposalDetailViewModel {
+    /// Possible actions triggered by tapping a link within the markdown content.
     enum URLAction {
         case scrollTo(id: String)
         case showDetail(Proposal.Snapshot)
         case open(URL)
     }
 
+    /// Determines the appropriate action for a tapped URL.
     func makeURLAction(url: URL) async -> URLAction {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return .open(url)

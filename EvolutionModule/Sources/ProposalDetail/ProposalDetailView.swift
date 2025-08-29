@@ -12,15 +12,19 @@ import SwiftUI
 
 @MainActor
 struct ProposalDetailView {
-    /// NavigationPath
+    /// Navigation path for pushing additional proposal details.
     @Binding var path: NavigationPath
-    /// ViewModel
+
+    /// Backing view model that loads markdown content.
     @State private var viewModel: ProposalDetailViewModel
-    /// マークダウン再取得トリガー
+
+    /// Trigger used to re-fetch markdown data.
     @State private var refresh: UUID?
-    /// コピーしたコードブロック
+
+    /// Recently copied code block to show in the HUD.
     @State private var copied: CopiedCode?
-    /// An action that opens a URL.
+
+    /// Action used to open URLs from markdown links.
     @Environment(\.openURL) private var openURL
 
     init(path: Binding<NavigationPath>, proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
@@ -63,7 +67,7 @@ extension ProposalDetailView: View {
             NavigationBar(viewModel: viewModel)
         }
         .overlay {
-            ErrorView(error: viewModel.fetcherror) {
+            ErrorView(error: viewModel.fetchError) {
                 refresh = .init()
             }
         }
@@ -97,7 +101,7 @@ extension ProposalDetailView {
         }
     }
 
-    /// SFSafariViewController で Web コンテンツを表示
+    /// Presents web content in `SFSafariViewController` when available.
     @MainActor
     fileprivate func showSafariView(url: URL) {
         guard url.scheme?.contains(/^https?$/) == true else { return }

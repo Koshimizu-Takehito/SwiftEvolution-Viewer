@@ -3,11 +3,13 @@ import Splash
 import SwiftUI
 
 public extension CodeSyntaxHighlighter where Self == SplashCodeSyntaxHighlighter {
+    /// Creates a Splash-based syntax highlighter with the given theme.
     static func splash(theme: Splash.Theme) -> Self {
         Self.init(theme: theme)
     }
 }
 
+/// Syntax highlighter leveraging the Splash library.
 public struct SplashCodeSyntaxHighlighter: CodeSyntaxHighlighter {
     private let highlighter: SyntaxHighlighter<Format>
 

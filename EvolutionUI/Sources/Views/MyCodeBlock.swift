@@ -2,9 +2,9 @@ import MarkdownUI
 import Splash
 import SwiftUI
 
-/// コードブロック
+/// Displays a stylized code block with copy-to-clipboard support.
 public struct MyCodeBlock: View {
-    /// ColorScheme
+    /// Current color scheme used to select the syntax highlighting theme.
     @Environment(\.colorScheme) private var colorScheme
     @State private var copied: CopiedCode?
 
@@ -83,6 +83,7 @@ public struct MyCodeBlock: View {
     }
 }
 
+/// Represents a block of code that was copied to the clipboard.
 public struct CopiedCode: PreferenceKey, Hashable, Identifiable {
     public var id = UUID()
     public var code: String

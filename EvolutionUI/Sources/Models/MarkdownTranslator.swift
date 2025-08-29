@@ -3,10 +3,13 @@ import Markdown
 import Translation
 
 extension Locale.Language {
+    /// English language code.
     public static var english: Self { .init(identifier: "en") }
+    /// Japanese language code.
     public static var japanese: Self { .init(identifier: "ja") }
 }
 
+/// Utility that prints internal links found in markdown documents.
 public struct LinkReader: MarkupWalker {
     public mutating func visitLink(_ link: Link) {
         guard let components = URLComponents(string: link.destination!) else {
@@ -27,22 +30,26 @@ public struct LinkReader: MarkupWalker {
     public init() {}
 }
 
+/// Performs translation of markdown content between locales.
 public actor MarkdownTranslator {
     private typealias Rewriter = TranslatingMarkupRewriter
     private var source: Locale.Language
     private var target: Locale.Language
 
+    /// Creates a translator specifying source and target languages.
     public init(source: Locale.Language = .english, target: Locale.Language = .japanese) {
         self.source = source
         self.target = target
     }
 
+    /// Returns the translated markdown as a single string.
     public func translate(markdown: String) async throws -> String {
         let document = Document(parsing: markdown)
         var rewriter = MarkupTranslator(source: source, target: target)
         return try await rewriter.visit(document)?.format() ?? ""
     }
 
+    /// Streams translated markdown as it is produced.
     public func translate(markdown: String) -> AsyncThrowingStream<String, any Error> {
         AsyncThrowingStream { continuation in
             Task.detached(priority: .medium) { [self] in
@@ -65,6 +72,7 @@ public actor MarkdownTranslator {
     }
 }
 
+/// Synchronously rewrites markup by translating each text fragment.
 public struct MarkupTranslator: AsyncMarkupRewriter {
     private let translator: TranslationSession
 
@@ -77,6 +85,7 @@ public struct MarkupTranslator: AsyncMarkupRewriter {
     }
 }
 
+/// Asynchronously rewrites markup and notifies a callback with each replacement.
 struct TranslatingMarkupRewriter: AsyncMarkupRewriter {
     private let translator: TranslationSession
 
@@ -111,7 +120,7 @@ struct TranslatingMarkupRewriter: AsyncMarkupRewriter {
         case (let lhs as Text, let rhs as Text) where lhs.string == rhs.string:
             translated
         default:
-            // 子ノードを走査し、再帰的に置き換えを試みる
+            // Traverse child nodes and attempt replacement recursively
             markup.withUncheckedChildren(
                 markup.children.map {
                     replace(in: $0, original: original, translated: translated)

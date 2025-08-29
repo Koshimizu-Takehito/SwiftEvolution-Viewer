@@ -3,10 +3,12 @@ import EvolutionUI
 import SwiftData
 import SwiftUI
 
+/// Convenience trait for previews that require proposal data.
 extension PreviewTrait where T == Preview.ViewTraits {
     @MainActor public static var proposal: Self = .modifier(ProposalPreviewModifier())
 }
 
+/// Injects in-memory proposal data into SwiftUI previews.
 struct ProposalPreviewModifier: PreviewModifier {
     public static func makeSharedContext() throws -> ModelContainer {
         let container = try ModelContainer(

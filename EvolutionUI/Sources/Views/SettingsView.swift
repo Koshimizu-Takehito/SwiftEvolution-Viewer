@@ -12,14 +12,14 @@ public struct SettingsView: View {
         TabView {
             AcknowledgementsView()
                 .tabItem {
-                    Label("謝辞", systemImage: "hands.clap.fill")
+                    Label("Acknowledgements", systemImage: "hands.clap.fill")
                 }
                 .tag(Tabs.general)
         }
     }
 }
 
-/// 謝辞
+/// Displays acknowledgements for third-party libraries.
 struct AcknowledgementsView: View {
     @State var selection = Acknowledgement.allItems.first
     @State var items = Acknowledgement.allItems

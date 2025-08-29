@@ -3,20 +3,22 @@ import EvolutionUI
 import SwiftUI
 
 // MARK: -
-/// SplitView の Detail View
-///
-/// Detail View 側のナビゲーションスタックの管理を行う
+
+/// Detail side of the split view that manages its own navigation stack.
 struct ContentDetailView: View {
-    /// 詳細画面のNavigationPath
+    /// Navigation path for presenting nested proposal details.
     @State private var detailPath = NavigationPath()
-    /// 表示する値
+
+    /// The proposal to display.
     let proposal: Proposal.Snapshot
-    /// 水平サイズクラス
+
+    /// Horizontal size class of the surrounding environment.
     let horizontal: UserInterfaceSizeClass?
-    /// アクセントカラー（ ナビゲーションスタックにスタックされるごとに変更する ）
+
+    /// Accent color used for the navigation bar, updated for each pushed view.
     @Binding var accentColor: Color?
 
-    /// ModelContext
+    /// Model context used to load additional data.
     @Environment(\.modelContext) private var context
 
     var body: some View {
@@ -30,6 +32,7 @@ struct ContentDetailView: View {
         }
     }
 
+    /// Builds the actual detail view for a proposal.
     func detail(proposal: Proposal.Snapshot) -> some View {
         ProposalDetailView(path: $detailPath, proposal: proposal, modelContainer: context.container)
             .onChange(of: accentColor(proposal), initial: true) { _, color in
@@ -37,6 +40,7 @@ struct ContentDetailView: View {
             }
     }
 
+    /// Determines the accent color based on the proposal's status.
     func accentColor(_ proposal: Proposal.Snapshot) -> Color {
         Proposal.Status.State(proposal: proposal)?.color ?? .darkText
     }

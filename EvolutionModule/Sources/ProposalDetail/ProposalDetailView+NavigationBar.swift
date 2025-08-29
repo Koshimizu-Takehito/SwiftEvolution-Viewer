@@ -5,8 +5,9 @@ import SwiftUI
 
 extension ProposalDetailView {
     @MainActor
+    /// Toolbar content used within ``ProposalDetailView``.
     struct NavigationBar {
-        /// ViewModel
+        /// Backing view model for the proposal detail screen.
         @Bindable var viewModel: ProposalDetailViewModel
     }
 }
@@ -27,12 +28,12 @@ extension ProposalDetailView.NavigationBar {
     @ViewBuilder
     fileprivate func translateButton() -> some View {
         if !viewModel.translating {
-            Button("翻訳", systemImage: "character.bubble") {
+            Button("Translate", systemImage: "character.bubble") {
                 Task { try await viewModel.translate() }
             }
         } else {
             ZStack {
-                Button("翻訳", systemImage: "character.bubble") {}
+                Button("Translate", systemImage: "character.bubble") {}
                     .hidden()
                 ProgressView()
             }
