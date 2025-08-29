@@ -5,28 +5,36 @@ import SwiftUI
 
 // MARK: - ContentView
 
-/// ContentView
+/// Main entry view that displays the list of proposals and their details.
 @MainActor
 public struct ContentView {
     @Environment(\.horizontalSizeClass) private var horizontal
-    /// ModelContext
+
+    /// Model context used to access persistent data.
     @Environment(\.modelContext) private var context
-    /// ナビゲーションバーの現在の色合い
+
+    /// Current tint color of the navigation bar.
     @State private var tint: Color?
-    /// ブックマークでのフィルタ有無
+
+    /// Indicates whether the list is filtered to bookmarked proposals.
     @AppStorage("isBookmarked") private var isBookmarked = false
-    /// リスト取得エラー
-    @State private var fetcherror: Error?
-    /// リスト再取得トリガー
+
+    /// Error produced when fetching proposals.
+    @State private var fetchError: Error?
+
+    /// Trigger used to re-fetch proposal data.
     @State private var refresh: UUID?
-    /// すべてのプロポーザル
+
+    /// All loaded proposals from storage.
     @Query private var allProposals: [Proposal]
-    /// 選択中のステータス
+
+    /// Currently selected status filter.
     @StatusFilter private var filter
 
-    /// すべてのブックマーク
+    /// Cached proposals that have been bookmarked.
     @State private var bookmarks: [Proposal] = []
-    /// リスト画面で選択された詳細画面のコンテンツ
+
+    /// Proposal currently selected in the list view.
     @State private var proposal: Proposal.Snapshot?
 
     private var detailTint: Binding<Color?> {
@@ -55,17 +63,17 @@ public struct ContentView {
 extension ContentView: View {
     public var body: some View {
         NavigationSplitView {
-            // リスト画面
+            // List view
             ProposalListView(
                 selection: $proposal,
                 status: filter,
                 isBookmarked: !bookmarks.isEmpty && isBookmarked
             )
             .environment(\.horizontalSizeClass, horizontal)
-            .overlay { ErrorView(error: fetcherror, $refresh) }
+            .overlay { ErrorView(error: fetchError, $refresh) }
             .toolbar { toolbar }
         } detail: {
-            // 詳細画面
+            // Detail view
             if let proposal {
                 ContentDetailView(
                     proposal: proposal,
@@ -77,12 +85,12 @@ extension ContentView: View {
         }
         .tint(barTint)
         .task(id: refresh) {
-            fetcherror = nil
+            fetchError = nil
             do {
                 try await ProposalRepository(modelContainer: context.container).fetch()
             } catch {
                 if allProposals.isEmpty {
-                    fetcherror = error
+                    fetchError = error
                 }
             }
         }
@@ -92,7 +100,7 @@ extension ContentView: View {
         }
     }
 
-    /// ツールバー
+    /// Toolbar content for the proposal list view.
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         if !bookmarks.isEmpty {

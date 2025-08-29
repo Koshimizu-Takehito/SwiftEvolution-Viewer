@@ -2,6 +2,7 @@ import SwiftUI
 
 // https://github.com/apple/sample-food-truck/blob/main/App/General/FlowLayout.swift
 // https://qiita.com/penguinsan_pg/items/aeab0dd86a9aa0ebdad9
+/// A flexible layout that arranges subviews in a flowing row-based grid.
 public struct FlowLayout: Layout {
     var alignment: Alignment = .center
     var spacing: CGFloat?
@@ -40,10 +41,12 @@ public struct FlowLayout: Layout {
         }
     }
 
+    /// Pre-computed layout information for arranging subviews.
     struct FlowResult {
         var bounds = CGSize.zero
         var rows = [Row]()
 
+        /// A single row within the flow layout.
         struct Row {
             var range: Range<Int>
             var xOffsets: [Double]

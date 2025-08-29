@@ -5,14 +5,16 @@ import SwiftUI
 
 // MARK: - Cell
 
+/// Displays summary information for a proposal in the list view.
 struct ProposalListCell: View {
+    /// Proposal to be presented.
     let proposal: Proposal
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             let label = label
             HStack {
-                // ラベル
+                // Status label
                 Text(label.text)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -21,15 +23,15 @@ struct ProposalListCell: View {
                             .stroke()
                     }
                     .foregroundStyle(label.color)
-                // ブックマーク
+                // Bookmark indicator
                 Image(systemName: "bookmark.fill")
                     .foregroundStyle(label.color)
                     .opacity(proposal.bookmark != nil ? 1 : 0)
                     .animation(.default, value: proposal.bookmark)
             }
-            // 本文
+            // Title
             Text(title)
-                .lineLimit(nil)  // macOS でこの指定が必須
+                .lineLimit(nil)  // Required on macOS to allow multiline titles
         }
         #if os(macOS)
             .padding(.top, 8)
@@ -37,11 +39,13 @@ struct ProposalListCell: View {
         #endif
     }
 
+    /// Text and color pair representing the proposal's status.
     private var label: (text: String, color: Color) {
         let state = Proposal.Status.State(proposal: proposal)
         return (state.label, state.color)
     }
 
+    /// Combined identifier and title string.
     private var title: AttributedString {
         let id = AttributedString(
             proposal.proposalID,

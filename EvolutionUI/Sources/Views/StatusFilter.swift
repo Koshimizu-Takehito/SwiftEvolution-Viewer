@@ -2,6 +2,7 @@ import EvolutionModel
 import SwiftUI
 
 @propertyWrapper
+/// Stores a mapping of proposal statuses to inclusion flags using `AppStorage`.
 public struct StatusFilter: DynamicProperty {
     @AppStorage("accepted")
     private var accepted = true
@@ -43,6 +44,7 @@ public struct StatusFilter: DynamicProperty {
         }
     }
 
+    /// Provides bindings to individual status flags.
     public var projectedValue: (_ status: Proposal.Status.State) -> (Binding<Bool>) {
         return { status in
             switch status {

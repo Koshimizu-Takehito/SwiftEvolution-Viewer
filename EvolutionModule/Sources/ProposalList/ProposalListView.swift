@@ -5,6 +5,7 @@ import SwiftUI
 
 // MARK: - ListView
 
+/// Displays a list of proposals and manages selection state.
 struct ProposalListView: View {
     @Environment(\.horizontalSizeClass) private var horizontal
     @Binding var selection: Proposal.Snapshot?
@@ -39,13 +40,14 @@ struct ProposalListView: View {
         .onAppear(perform: selectFirstItem)
     }
 
+    /// Selects the first proposal when running on larger displays.
     func selectFirstItem() {
         #if os(macOS)
             if selection == nil, let proposal = proposals.first {
                 selection = Markdown(proposal: .init(proposal))
             }
         #elseif os(iOS)
-            /// SplitView　が画面分割表示の場合に、初期表示を与える
+            // Provide an initial selection when the split view is displayed side-by-side.
             if horizontal == .regular, selection == nil, let proposal = proposals.first {
                 selection = .init(object: proposal)
             }

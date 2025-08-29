@@ -2,6 +2,7 @@ import EvolutionModel
 import Observation
 import SwiftUI
 
+/// Toolbar button that allows users to filter proposals by status.
 public struct ProposalStatusPicker: View {
     @State private var showPopover = false
     @StatusFilter private var filter
@@ -52,6 +53,7 @@ public struct ProposalStatusPicker: View {
         }
     }
 
+    /// Icon name reflecting whether filters are active.
     var iconName: String {
         filter.values.allSatisfy(\.self)
             ? "line.3.horizontal.decrease.circle"

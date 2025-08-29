@@ -1,7 +1,7 @@
 import SwiftUI
 
 extension ToolbarItemPlacement {
-    /// Sprit View のプライマリ側
+    /// Toolbar placement used on the primary side of a split view.
     public static var content: Self {
         #if os(macOS)
             .automatic

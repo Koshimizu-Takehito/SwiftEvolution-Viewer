@@ -26,7 +26,7 @@ public struct ErrorView: View {
                     Text(error.localizedDescription)
                 } actions: {
                     if let retry {
-                        Button("再試行", action: retry)
+                        Button("Retry", action: retry)
                     }
                 }
             }

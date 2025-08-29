@@ -36,13 +36,13 @@ extension [ProposalDetailRow] {
         }
     }
 
-    /// Markdownのヘッダー行からHTMLのidスラッグを作る
+    /// Generates an HTML `id` slug from a Markdown heading line.
     /// - Parameters:
-    ///   - line: 例: "### `~Copyable` as logical negation"
-    ///   - includeHash: 先頭に `#` を付ける（デフォルト true）
-    /// - Returns: 例: "#copyable-as-logical-negation"
+    ///   - line: Example: "### `~Copyable` as logical negation"
+    ///   - includeHash: Whether to prefix the slug with `#` (default is `true`).
+    /// - Returns: Example: "#copyable-as-logical-negation"
     private nonisolated static func htmlID(fromMarkdownHeader line: String, includeHash: Bool = true) -> String {
-        // 1) 先頭の見出しマーカーを除去（0〜3個の空白 + #1〜6 + 空白）
+        // 1) Remove leading heading markers (0-3 spaces + 1-6 # characters + space)
         let headerPattern = #"^\s{0,3}#{1,6}\s+"#
         let textStart = line.replacingOccurrences(
             of: headerPattern,
@@ -50,13 +50,13 @@ extension [ProposalDetailRow] {
             options: .regularExpression
         )
 
-        // 2) バッククォートとかっこを除去（中身は残す）
+        // 2) Remove backticks and parentheses but keep contents
         var s = textStart.replacingOccurrences(of: "`", with: "")
             .replacingOccurrences(of: "(", with: "")
             .replacingOccurrences(of: ")", with: "")
 
-        // 3) Unicode正規化（ローマ字化→ダイアクリティカル除去）
-        //    例: "Café" -> "Cafe", 日本語は toLatin でローマ字化される場合あり
+        // 3) Unicode normalization (Romanization followed by diacritic removal)
+        //    e.g., "Café" -> "Cafe"; Japanese may be romanized with `toLatin`
         if let latin = s.applyingTransform(.toLatin, reverse: false) {
             s = latin
         }
@@ -65,21 +65,21 @@ extension [ProposalDetailRow] {
             locale: .current
         )
 
-        // 4) 小文字化
+        // 4) Lowercase all characters
         s = s.lowercased()
 
-        // 5) 許可しない文字をハイフンに置換（英数以外はまとめて-）
-        //    連続する非英数字は1つのハイフンに圧縮
+        // 5) Replace disallowed characters with a hyphen
+        //    Consecutive non-alphanumerics are collapsed into a single hyphen
         s = s.replacingOccurrences(
             of: #"[^a-z0-9]+"#,
             with: "-",
             options: .regularExpression
         )
 
-        // 6) 前後のハイフンをトリム
+        // 6) Trim leading and trailing hyphens
         s = s.trimmingCharacters(in: CharacterSet(charactersIn: "-"))
 
-        // 7) 空ならフォールバック
+        // 7) Fallback if the result is empty
         if s.isEmpty { s = "section" }
 
         return includeHash ? "#\(s)" : s

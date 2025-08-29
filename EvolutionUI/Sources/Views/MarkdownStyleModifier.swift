@@ -2,9 +2,9 @@ import MarkdownUI
 import Splash
 import SwiftUI
 
-/// マークダウンの設定
+/// Configures markdown styling for proposal content.
 public struct MarkdownStyleModifier: ViewModifier {
-    /// ColorScheme
+    /// Current color scheme of the environment.
     @Environment(\.colorScheme) private var colorScheme
 
     public init() {}

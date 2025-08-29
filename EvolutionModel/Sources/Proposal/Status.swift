@@ -3,6 +3,7 @@ import Foundation
 // MARK: - Status
 
 public extension Proposal {
+    /// Metadata describing the review lifecycle of a proposal.
     struct Status: Codable, Hashable, Sendable {
         /// Raw state string such as "activeReview" or "accepted".
         public var state: String
@@ -13,6 +14,7 @@ public extension Proposal {
         /// The start date for the proposal's review period.
         public var start: String?
 
+        /// Creates a new status description.
         public init(state: String, version: String? = nil, end: String? = nil, start: String? = nil) {
             self.state = state
             self.version = version
@@ -25,6 +27,7 @@ public extension Proposal {
 // MARK: - State
 
 public extension Proposal.Status {
+    /// Enumerates the standardized set of review states a proposal may be in.
     enum State: String, Codable, Hashable, CaseIterable, Sendable, Identifiable, CustomStringConvertible, Comparable {
         case accepted
         case activeReview
@@ -57,14 +60,17 @@ public extension Proposal.Status {
             }
         }
 
+        /// Initializes from a ``Proposal`` model if the state string matches a known case.
         public init?(proposal: Proposal) {
             self.init(rawValue: proposal.status.state)
         }
 
+        /// Initializes from a ``Proposal/Snapshot`` if the state string matches a known case.
         public init?(proposal: Proposal.Snapshot) {
             self.init(rawValue: proposal.status.state)
         }
 
+        /// Provides ordering for states based on their declaration order.
         public static func < (lhs: Self, rhs: Self) -> Bool {
             Index(state: lhs) < Index(state: rhs)
         }
@@ -72,6 +78,7 @@ public extension Proposal.Status {
 }
 
 public extension Proposal.Status.State {
+    /// Helper enum used to establish a sort order for ``Proposal.Status.State`` values.
     enum Index: Int, Comparable {
         case accepted
         case activeReview
@@ -81,6 +88,7 @@ public extension Proposal.Status.State {
         case returnedForRevision
         case withdrawn
 
+        /// Converts a state into its corresponding index value.
         public init(state: Proposal.Status.State) {
             self = unsafeBitCast(state, to: Index.self)
         }

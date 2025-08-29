@@ -2,6 +2,7 @@ import EvolutionModel
 import SwiftUI
 
 extension Proposal.Status.State {
+    /// Display color associated with each proposal status.
     public var color: Color {
         switch self {
         case .accepted:
@@ -21,6 +22,7 @@ extension Proposal.Status.State {
         }
     }
 
+    /// `UIColor` variant used for UIKit-based components.
     public var tintColor: UIColor {
         switch self {
         case .accepted:
@@ -42,6 +44,7 @@ extension Proposal.Status.State {
 }
 
 extension Proposal.Status.State? {
+    /// Human-readable string for the optional status.
     public var label: String {
         switch self {
         case .some(let state):
@@ -51,6 +54,7 @@ extension Proposal.Status.State? {
         }
     }
 
+    /// Fallback color when a status may be `nil`.
     public var color: Color {
         switch self {
         case .some(let state):
@@ -60,6 +64,7 @@ extension Proposal.Status.State? {
         }
     }
 
+    /// Fallback `UIColor` when a status may be `nil`.
     public var tintColor: UIColor {
         switch self {
         case .some(let state):
@@ -71,5 +76,6 @@ extension Proposal.Status.State? {
 }
 
 extension EnvironmentValues {
+    /// Environment value storing the set of currently selected proposal states.
     @Entry public var selectedStatus: Set<Proposal.Status.State> = .init(Proposal.Status.State.allCases)
 }

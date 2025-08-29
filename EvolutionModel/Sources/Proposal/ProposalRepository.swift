@@ -3,6 +3,7 @@ import SwiftData
 
 // MARK: - ProposalRepository
 
+/// Retrieves and persists proposal metadata from the Swift Evolution feed.
 @ModelActor
 public actor ProposalRepository {
     /// Top-level structure of the `evolution.json` feed.
@@ -16,6 +17,8 @@ public actor ProposalRepository {
         URL(string: "https://download.swift.org/swift-evolution/v1/evolution.json")!
     }
 
+    /// Downloads the proposal feed and stores the results.
+    /// - Returns: An array of stored proposal snapshots.
     @discardableResult
     public func fetch() async throws -> [Proposal.Snapshot] {
         let (data, _) = try await URLSession.shared.data(from: url)
@@ -34,6 +37,8 @@ public actor ProposalRepository {
             .compactMap(Proposal.Snapshot.init)
     }
 
+    /// Finds a proposal by its identifier if it exists in storage.
+    /// - Parameter proposalID: The proposal identifier to search for.
     public func find(by proposalID: String) -> Proposal.Snapshot? {
         try? ModelContext(modelContainer)
             .fetch(.id(proposalID))
@@ -43,6 +48,7 @@ public actor ProposalRepository {
 }
 
 private extension FetchDescriptor<Proposal> {
+    /// Convenience helper for building a descriptor that looks up a proposal by ID.
     static func id(_ proposalID: String) -> Self {
         FetchDescriptor(predicate: #Predicate<Proposal> {
             $0.proposalID == proposalID
