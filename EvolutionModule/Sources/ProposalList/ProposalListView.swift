@@ -38,7 +38,7 @@ struct ProposalListView: View {
     func selectFirstItem() {
         #if os(macOS)
             if selection == nil, let proposal = proposals.first {
-                selection = Markdown(proposal: .init(proposal))
+                selection = .init(object: proposal)
             }
         #elseif os(iOS)
             // Provide an initial selection when the split view is displayed side-by-side.
