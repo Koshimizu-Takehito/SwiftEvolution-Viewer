@@ -34,8 +34,8 @@ struct ProposalListCell: View {
                 .lineLimit(nil)  // Required on macOS to allow multiline titles
         }
         #if os(macOS)
-            .padding(.top, 8)
-            .padding(.leading, 4)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 4)
         #endif
     }
 
