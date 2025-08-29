@@ -10,19 +10,14 @@ struct ProposalListView: View {
     @Environment(\.horizontalSizeClass) private var horizontal
     @Binding var selection: Proposal.Snapshot?
     @Query private var proposals: [Proposal]
-    let status: [Proposal.Status.State : Bool]
 
     init(
         selection: Binding<Proposal.Snapshot?>,
-        status: [Proposal.Status.State : Bool],
+        status: [Proposal.Status.State: Bool],
         isBookmarked: Bool
     ) {
-        self.status = status
         _selection = selection
-        _proposals = .query(
-            status: status,
-            isBookmarked: isBookmarked
-        )
+        _proposals = Query(status, isBookmarked: isBookmarked)
     }
 
     var body: some View {
@@ -35,7 +30,6 @@ struct ProposalListView: View {
         }
         .animation(.default, value: proposals)
         .tint(.darkText.opacity(0.2))
-        .animation(.default, value: status)
         .navigationTitle("Swift Evolution")
         .onAppear(perform: selectFirstItem)
     }
