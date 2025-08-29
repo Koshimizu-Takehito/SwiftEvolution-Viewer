@@ -1,4 +1,3 @@
-import EvolutionCore
 import EvolutionModel
 import EvolutionUI
 import SwiftData
@@ -21,7 +20,9 @@ extension AppScene: Scene {
     public var body: some Scene {
         WindowGroup {
             content()
-                .modelContainer(for: ProposalObject.self)
+                .modelContainer(
+                    for: [Bookmark.self, Markdown.self, Proposal.self]
+                )
         }
         .commands {
             FilterCommands()

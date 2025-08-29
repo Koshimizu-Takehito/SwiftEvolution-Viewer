@@ -1,4 +1,3 @@
-import EvolutionCore
 import EvolutionModel
 import EvolutionUI
 import SwiftData
@@ -21,13 +20,14 @@ public struct ContentView {
     /// リスト再取得トリガー
     @State private var refresh: UUID?
     /// すべてのプロポーザル
-    @Query private var allProposals: [ProposalObject]
+    @Query private var allProposals: [Proposal]
     /// 選択中のステータス
-    @AppStorage private var status: Set<ProposalStatus> = .allCases
+    @StatusFilter private var filter
+
     /// すべてのブックマーク
-    @State private var bookmarks: [ProposalObject] = []
+    @State private var bookmarks: [Proposal] = []
     /// リスト画面で選択された詳細画面のコンテンツ
-    @State private var selection: Markdown?
+    @State private var proposal: Proposal.Snapshot?
 
     private var detailTint: Binding<Color?> {
         switch horizontal {
@@ -57,8 +57,8 @@ extension ContentView: View {
         NavigationSplitView {
             // リスト画面
             ProposalListView(
-                selection: $selection,
-                status: status,
+                selection: $proposal,
+                status: filter,
                 isBookmarked: !bookmarks.isEmpty && isBookmarked
             )
             .environment(\.horizontalSizeClass, horizontal)
@@ -66,20 +66,20 @@ extension ContentView: View {
             .toolbar { toolbar }
         } detail: {
             // 詳細画面
-            if let selection {
+            if let proposal {
                 ContentDetailView(
-                    markdown: selection,
+                    proposal: proposal,
                     horizontal: horizontal,
                     accentColor: detailTint
                 )
-                .id(selection)
+                .id(proposal)
             }
         }
         .tint(barTint)
         .task(id: refresh) {
             fetcherror = nil
             do {
-                try await ProposalObject.fetch(container: context.container)
+                try await ProposalRepository(modelContainer: context.container).fetch()
             } catch {
                 if allProposals.isEmpty {
                     fetcherror = error
@@ -87,7 +87,7 @@ extension ContentView: View {
             }
         }
         .animation(.default, value: bookmarks)
-        .onChange(of: try! allProposals.filter(.bookmark), initial: true) {
+        .onChange(of: allProposals.filter { $0.bookmark != nil }, initial: true) {
             bookmarks = $1
         }
     }

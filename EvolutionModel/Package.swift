@@ -15,13 +15,11 @@ let package = Package(
             targets: ["EvolutionModel"]
         ),
     ],
-    dependencies: [
-        .package(path: "../EvolutionCore")
-    ],
+    dependencies: [],
     targets: [
         .target(
             name: "EvolutionModel",
-            dependencies: ["EvolutionCore"]
+            dependencies: []
         ),
         .testTarget(
             name: "EvolutionModelTests",

@@ -1,10 +1,10 @@
-import SwiftUI
+import EvolutionModel
 import Observation
-import EvolutionCore
+import SwiftUI
 
 public struct ProposalStatusPicker: View {
     @State private var showPopover = false
-    @AppStorage var status: Set<ProposalStatus> = .allCases
+    @StatusFilter private var filter
 
     public init() {}
 
@@ -21,8 +21,8 @@ public struct ProposalStatusPicker: View {
         .popover(isPresented: $showPopover) {
             VStack {
                 FlowLayout(alignment: .leading, spacing: 8) {
-                    ForEach(ProposalStatus.allCases, id: \.self) { option in
-                        Toggle(option.description, isOn: $status.isOn(option))
+                    ForEach(filter.keys.sorted(by: <)) { option in
+                        Toggle(option.description, isOn: $filter(option))
                             .toggleStyle(.button)
                             .tint(option.color)
                     }
@@ -32,17 +32,19 @@ public struct ProposalStatusPicker: View {
                 HStack {
                     Spacer()
                     Button("Select All") {
-                        status = Set(ProposalStatus.allCases)
+                        let allCases = Proposal.Status.State.allCases
+                        filter = .init(uniqueKeysWithValues: allCases.map { ($0, true) })
                     }
-                    .disabled(status == Set(ProposalStatus.allCases))
+                    .disabled(filter.values.allSatisfy(\.self))
                     Spacer()
                     Button("Deselect All") {
-                        status = []
+                        filter = [:]
                     }
-                    .disabled(status.isEmpty)
+                    .disabled(filter.values.allSatisfy { !$0 })
                     Spacer()
                 }
             }
+            .animation(.default, value: filter)
             .frame(idealWidth: 240)
             .padding()
             .presentationCompactAdaptation(.popover)
@@ -51,7 +53,7 @@ public struct ProposalStatusPicker: View {
     }
 
     var iconName: String {
-        status == Set(ProposalStatus.allCases)
+        filter.values.allSatisfy(\.self)
             ? "line.3.horizontal.decrease.circle"
             : "line.3.horizontal.decrease.circle.fill"
     }

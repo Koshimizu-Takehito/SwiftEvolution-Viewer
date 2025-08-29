@@ -14,7 +14,6 @@
 /* Begin PBXFileReference section */
 		3A2444182E5186CF0035346F /* EvolutionUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = EvolutionUI; sourceTree = "<group>"; };
 		3A874FA82E5195ED00DEBD9B /* EvolutionModule */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = EvolutionModule; sourceTree = "<group>"; };
-		3AB297F12E5055CC0083D08D /* EvolutionCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = EvolutionCore; sourceTree = "<group>"; };
 		3ADA645A2E505A4900F03012 /* EvolutionModel */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = EvolutionModel; sourceTree = "<group>"; };
 		FB4654F02B53FEFB00E494E6 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.2.sdk/System/Library/Frameworks/SwiftData.framework; sourceTree = DEVELOPER_DIR; };
 		FBCE36922B3EDF2D000763B5 /* SwiftEvolution.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftEvolution.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,7 +56,6 @@
 		FBCE36892B3EDF2D000763B5 = {
 			isa = PBXGroup;
 			children = (
-				3AB297F12E5055CC0083D08D /* EvolutionCore */,
 				3ADA645A2E505A4900F03012 /* EvolutionModel */,
 				3A874FA82E5195ED00DEBD9B /* EvolutionModule */,
 				3A2444182E5186CF0035346F /* EvolutionUI */,
@@ -123,7 +121,6 @@
 			);
 			mainGroup = FBCE36892B3EDF2D000763B5;
 			packageReferences = (
-				3ADA64572E5056A900F03012 /* XCLocalSwiftPackageReference "EvolutionCore" */,
 				3ADA645C2E505A7900F03012 /* XCLocalSwiftPackageReference "EvolutionModel" */,
 				3A37B2E32E51875600F1812A /* XCLocalSwiftPackageReference "EvolutionUI" */,
 				3A874FA92E5196E700DEBD9B /* XCLocalSwiftPackageReference "EvolutionModule" */,
@@ -402,10 +399,6 @@
 		3A874FA92E5196E700DEBD9B /* XCLocalSwiftPackageReference "EvolutionModule" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = EvolutionModule;
-		};
-		3ADA64572E5056A900F03012 /* XCLocalSwiftPackageReference "EvolutionCore" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = EvolutionCore;
 		};
 		3ADA645C2E505A7900F03012 /* XCLocalSwiftPackageReference "EvolutionModel" */ = {
 			isa = XCLocalSwiftPackageReference;

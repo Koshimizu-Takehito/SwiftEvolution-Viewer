@@ -1,4 +1,4 @@
-import EvolutionCore
+import EvolutionModel
 import EvolutionUI
 import Markdown
 import MarkdownUI
@@ -8,11 +8,10 @@ import Splash
 import SwiftData
 import SwiftUI
 
-import struct EvolutionCore.Markdown
-
 // MARK: - ProposalDetailView
 
-struct ProposalDetailView: View {
+@MainActor
+struct ProposalDetailView {
     /// NavigationPath
     @Binding var path: NavigationPath
     /// ViewModel
@@ -24,6 +23,20 @@ struct ProposalDetailView: View {
     /// An action that opens a URL.
     @Environment(\.openURL) private var openURL
 
+    init(path: Binding<NavigationPath>, proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
+        _path = path
+        _viewModel = State(
+            wrappedValue: ProposalDetailViewModel(
+                proposal: proposal,
+                modelContainer: modelContainer
+            )
+        )
+    }
+}
+
+// MARK: - View
+
+extension ProposalDetailView: View {
     var body: some View {
         ScrollViewReader { proxy in
             List {
@@ -59,7 +72,7 @@ struct ProposalDetailView: View {
         }
         .task(id: refresh) {
             guard refresh != nil else { return }
-            await viewModel.fetchText()
+            await viewModel.loadMarkdown()
         }
         .navigationTitle(viewModel.title)
         .iOSNavigationBarTitleDisplayMode(.inline)
@@ -68,21 +81,17 @@ struct ProposalDetailView: View {
 }
 
 extension ProposalDetailView {
-    init(path: Binding<NavigationPath>, markdown: Markdown, context: ModelContext) {
-        self.init(path: path, viewModel: .init(markdown: markdown, context: context))
-    }
-}
-
-extension ProposalDetailView {
     fileprivate func openURLAction(with proxy: ScrollViewProxy) -> OpenURLAction {
         OpenURLAction { url in
-            switch viewModel.makeURLAction(url: url) {
-            case .scrollTo(let id):
-                withAnimation { proxy.scrollTo(id, anchor: .top) }
-            case .showMarkdown(let markdown):
-                path.append(markdown)
-            case .open:
-                showSafariView(url: url)
+            Task {
+                switch await viewModel.makeURLAction(url: url) {
+                case .scrollTo(let id):
+                    withAnimation { proxy.scrollTo(id, anchor: .top) }
+                case .showDetail(let proposal):
+                    path.append(proposal)
+                case .open:
+                    showSafariView(url: url)
+                }
             }
             return .discarded
         }
@@ -111,10 +120,15 @@ extension ProposalDetailView {
 #Preview(traits: .proposal) {
     @Previewable @Environment(\.modelContext) var context
     NavigationStack {
-        ProposalDetailView(
-            path: Binding.fake,
-            markdown: .fake0465,
-            context: context
+        ProposalDetailView.init(
+            path: .fake,
+            proposal: .init(
+                id: "SE-0418",
+                link: "0418-inferring-sendable-for-methods.md",
+                status: .init(state: ".accepted"),
+                title: "Inferring Sendable for methods and key path literals"
+            ),
+            modelContainer: context.container
         )
     }
     .colorScheme(.dark)

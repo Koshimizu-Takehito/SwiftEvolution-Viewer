@@ -1,4 +1,3 @@
-import EvolutionCore
 import EvolutionModel
 import EvolutionUI
 import Foundation
@@ -11,13 +10,9 @@ import struct SwiftUI.Color
 @Observable
 @MainActor
 final class ProposalDetailViewModel: Observable {
-    /// 当該コンテンツ
-    private(set) var markdown: Markdown {
-        didSet {
-            items = .init(markdown: markdown)
-        }
-    }
-    /// 表示用のコンテンツ
+    /// プロポーザル
+    private let proposal: Proposal.Snapshot
+    /// 表示用のコンテンツ（マークダウンを解析した結果）
     private(set) var items: [ProposalDetailRow] = []
     /// マークダウン取得エラー
     private(set) var fetcherror: Error?
@@ -26,60 +21,67 @@ final class ProposalDetailViewModel: Observable {
 
     /// 画面のタイトル
     var title: String {
-        markdown.proposal.title
+        proposal.title
     }
 
     var tint: Color? {
-        markdown.proposal.state?.color
+        Proposal.Status.State(proposal: proposal)?.color
     }
 
     /// ブックマークの状態
-    var isBookmarked: Bool {
-        get {
-            ProposalObject[markdown.proposal.id, in: context]?.isBookmarked == true
-        }
-        set {
-            save(isBookmarked: newValue)
+    var isBookmarked: Bool = false {
+        didSet {
+            Task { await save(isBookmarked: isBookmarked) }
         }
     }
 
     /// ModelContext
-    @ObservationIgnored private let context: ModelContext
+    @ObservationIgnored private let modelContainer: ModelContainer
 
-    init(markdown: Markdown, context: ModelContext) {
-        self.markdown = markdown
-        self.context = context
+    init(proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
+        self.proposal = proposal
+        self.modelContainer = modelContainer
         Task {
-            await fetchText()
+            await loadMarkdown()
         }
-    }
-
-    /// 当該プロポーザルのブックマークの有無を保存
-    private func save(isBookmarked: Bool) {
-        let proposal = ProposalObject[markdown.proposal.id, in: context]
-        guard let proposal else { return }
-        proposal.isBookmarked = isBookmarked
-        try? proposal.modelContext?.save()
+        Task {
+            await loadBookmark()
+        }
     }
 
     /// マークダウンテキストを取得
-    func fetchText() async {
+    func loadMarkdown() async {
         fetcherror = nil
         do {
-            markdown.text = try await markdown.fetch()
-        } catch let error as URLError where error.code != URLError.cancelled {
-            fetcherror = error
+            let repository = MarkdownRepository(modelContainer: modelContainer)
+            let markdown = try await repository.fetch(proposal: proposal)
+            items = [ProposalDetailRow](markdown: markdown)
+        } catch let error as URLError where error.code == URLError.cancelled {
+            return
+        } catch is CancellationError {
+            return
         } catch {
             fetcherror = error
         }
+    }
+
+    func loadBookmark() async {
+        let repository = BookmarkRepository(modelContainer: modelContainer)
+        isBookmarked = (await repository.load(proposalID: proposal.id) != nil)
+    }
+
+
+    /// 当該プロポーザルのブックマークの有無を保存
+    private func save(isBookmarked: Bool) async {
+        let repository = BookmarkRepository(modelContainer: modelContainer)
+        try? await repository.update(proposal: proposal, isBookmarked: isBookmarked)
     }
 
     func translate() async throws {
         if items.isEmpty || translating {
             return
         }
-        translating = true
-        defer { translating = false }
+        translating = true; defer { translating = false }
 
         let translator = MarkdownTranslator()
         for (offset, item) in items.enumerated() {
@@ -88,67 +90,16 @@ final class ProposalDetailViewModel: Observable {
             }
         }
     }
-
-    /// Markdownのヘッダー行からHTMLのidスラッグを作る
-    /// - Parameters:
-    ///   - line: 例: "### `~Copyable` as logical negation"
-    ///   - includeHash: 先頭に `#` を付ける（デフォルト true）
-    /// - Returns: 例: "#copyable-as-logical-negation"
-    nonisolated static func htmlID(fromMarkdownHeader line: String, includeHash: Bool = true)
-        -> String
-    {
-        // 1) 先頭の見出しマーカーを除去（0〜3個の空白 + #1〜6 + 空白）
-        let headerPattern = #"^\s{0,3}#{1,6}\s+"#
-        let textStart = line.replacingOccurrences(
-            of: headerPattern,
-            with: "",
-            options: .regularExpression
-        )
-
-        // 2) バッククォートとかっこを除去（中身は残す）
-        var s = textStart.replacingOccurrences(of: "`", with: "")
-            .replacingOccurrences(of: "(", with: "")
-            .replacingOccurrences(of: ")", with: "")
-
-        // 3) Unicode正規化（ローマ字化→ダイアクリティカル除去）
-        //    例: "Café" -> "Cafe", 日本語は toLatin でローマ字化される場合あり
-        if let latin = s.applyingTransform(.toLatin, reverse: false) {
-            s = latin
-        }
-        s = s.folding(
-            options: [.diacriticInsensitive, .caseInsensitive],
-            locale: .current
-        )
-
-        // 4) 小文字化
-        s = s.lowercased()
-
-        // 5) 許可しない文字をハイフンに置換（英数以外はまとめて-）
-        //    連続する非英数字は1つのハイフンに圧縮
-        s = s.replacingOccurrences(
-            of: #"[^a-z0-9]+"#,
-            with: "-",
-            options: .regularExpression
-        )
-
-        // 6) 前後のハイフンをトリム
-        s = s.trimmingCharacters(in: CharacterSet(charactersIn: "-"))
-
-        // 7) 空ならフォールバック
-        if s.isEmpty { s = "section" }
-
-        return includeHash ? "#\(s)" : s
-    }
 }
 
 extension ProposalDetailViewModel {
     enum URLAction {
         case scrollTo(id: String)
-        case showMarkdown(Markdown)
+        case showDetail(Proposal.Snapshot)
         case open(URL)
     }
 
-    func makeURLAction(url: URL) -> URLAction {
+    func makeURLAction(url: URL) async -> URLAction {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return .open(url)
         }
@@ -157,7 +108,7 @@ extension ProposalDetailViewModel {
             guard let match = path.firstMatch(of: /^.+\/swift-evolution\/.*\/(\d+)-.*\.md/) else {
                 break
             }
-            return makeMarkdown(id: match.1, url: url).map(URLAction.showMarkdown) ?? .open(url)
+            return await makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
 
         case (nil, nil, "") where components.fragment?.isEmpty == false:
             return .scrollTo(id: url.absoluteString)
@@ -166,7 +117,7 @@ extension ProposalDetailViewModel {
             guard let match = path.firstMatch(of: /(\d+)-.*\.md$/) else {
                 break
             }
-            return makeMarkdown(id: match.1).map(URLAction.showMarkdown) ?? .open(url)
+            return await makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
 
         default:
             break
@@ -174,13 +125,8 @@ extension ProposalDetailViewModel {
         return .open(url)
     }
 
-    fileprivate func makeMarkdown(id: some StringProtocol, url: URL? = nil) -> Markdown? {
-        let id = "SE-\(String(id))"
-        let url = url.map(MarkdownURL.init(rawValue:))
-        let context = context.container.mainContext
-        guard let proposal = ProposalObject[id, in: context] else {
-            return nil
-        }
-        return Markdown(proposal: .init(proposal), url: url)
+    private func makeMarkdown(id: some StringProtocol) async -> Proposal.Snapshot? {
+        let repository = ProposalRepository(modelContainer: modelContainer)
+        return await repository.find(by: "SE-\(String(id))")
     }
 }
