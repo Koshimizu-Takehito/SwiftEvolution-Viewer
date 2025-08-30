@@ -109,10 +109,10 @@ open SwiftEvolution.xcodeproj
 SwiftEvolution/
 ├── App/                    # Main app entry point
 ├── EvolutionModel/         # SwiftData models and data management
-│   ├── Sources/
-│   │   ├── Proposal/       # Proposal models and repository
-│   │   ├── Bookmark/       # Bookmark management
-│   │   └── Markdown/       # Markdown caching and rendering
+│   └── Sources/
+│       ├── Proposal/       # Proposal models and repository
+│       ├── Bookmark/       # Bookmark management
+│       └── Markdown/       # Markdown caching and rendering
 ├── EvolutionModule/        # Main application logic and views
 ├── EvolutionUI/            # Reusable UI components
 └── SwiftEvolution.xcodeproj
