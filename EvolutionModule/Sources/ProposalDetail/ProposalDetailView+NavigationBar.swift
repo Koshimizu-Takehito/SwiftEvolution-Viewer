@@ -17,15 +17,18 @@ extension ProposalDetailView.NavigationBar: ToolbarContent {
         ToolbarItem {
             BookmarkButton(isBookmarked: $viewModel.isBookmarked)
         }
-        ToolbarSpacer()
-        ToolbarItem {
-            translateButton()
+        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+            ToolbarSpacer()
+            ToolbarItem {
+                translateButton()
+            }
         }
     }
 }
 
 extension ProposalDetailView.NavigationBar {
     @ViewBuilder
+    @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
     fileprivate func translateButton() -> some View {
         if !viewModel.translating {
             Button("Translate", systemImage: "character.bubble") {

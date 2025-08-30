@@ -19,8 +19,13 @@ struct ProposalListCell: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .overlay {
-                        ConcentricRectangle(corners: .fixed(8))
-                            .stroke()
+                        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+                            ConcentricRectangle(corners: .fixed(8))
+                                .stroke()
+                        } else {
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke()
+                        }
                     }
                     .foregroundStyle(label.color)
                 // Bookmark indicator

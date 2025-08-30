@@ -32,7 +32,7 @@ public struct CopiedHUD: View {
         .onGeometryChange(for: CGSize.self, of: \.size) { size = $1 }
         .frame(maxWidth: size.width, maxHeight: size.height)
         .padding()
-        .glassEffect(in: .rect(cornerRadius: 18))
+        .modifier(GlassEffect(shape: .rect(cornerRadius: 18)))
         .opacity(copied != nil ? 1 : 0)
         .symbolRenderingMode(.hierarchical)
         .foregroundStyle(.tint)
@@ -40,6 +40,18 @@ public struct CopiedHUD: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onGeometryChange(for: CGSize.self, of: \.size) {
             backgroundSize = $1
+        }
+    }
+}
+
+private struct GlassEffect<S: Shape>: ViewModifier {
+    var shape: S
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+            content.glassEffect(in: shape)
+        } else {
+            content.background(.ultraThinMaterial, in: shape)
         }
     }
 }

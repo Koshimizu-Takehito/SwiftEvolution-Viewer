@@ -41,7 +41,7 @@ This project follows a modular architecture with clear separation of concerns:
 
 ![Swift](https://img.shields.io/badge/swift-6.2-orange.svg)
 ![Platform](https://img.shields.io/badge/iOS-26.0+-blue.svg)
-![Platform](https://img.shields.io/badge/macOS-26.0+-blue.svg)
+![Platform](https://img.shields.io/badge/macOS-15.0+-blue.svg)
 ![Xcode](https://img.shields.io/badge/xcode-26.0+-magenta.svg)
 
 ## Installation
