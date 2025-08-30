@@ -71,7 +71,7 @@ public struct DownloadProgressView: View {
 
     /// Ratio of completed items to total items.
     var ratio: Double {
-        Double(current) / Double(total)
+        Double(min(current, total)) / Double(total)
     }
 
     /// Opacity used to hide the view when no download is in progress.
