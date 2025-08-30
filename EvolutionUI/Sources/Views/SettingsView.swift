@@ -1,6 +1,7 @@
 #if os(macOS)
 import SwiftUI
 
+/// Top-level settings interface presented on macOS builds.
 public struct SettingsView: View {
     private enum Tabs: Hashable {
         case general, advanced
@@ -49,9 +50,12 @@ struct AcknowledgementsView: View {
     }
 }
 
+/// Model describing a single third-party acknowledgement entry.
 struct Acknowledgement: Hashable, Identifiable {
     var id: String { title }
+    /// Title of the acknowledged library.
     var title: String = ""
+    /// Full acknowledgement text.
     var text: String = ""
 }
 

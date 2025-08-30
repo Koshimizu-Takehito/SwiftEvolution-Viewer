@@ -45,8 +45,9 @@ extension ErrorView {
 }
 
 #Preview {
-    let error = URLError(.notConnectedToInternet, userInfo: [
-        NSLocalizedDescriptionKey: "インターネット接続がオフラインのようです。"
-    ])
+    let error = URLError(
+        .notConnectedToInternet,
+        userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."]
+    )
     return ErrorView(error: error, retry: { })
 }

@@ -5,7 +5,7 @@ import SwiftData
 
 /// Retrieves and persists proposal metadata from the Swift Evolution feed.
 @ModelActor
-public actor ProposalRepository {
+public actor ProposalRepository: Sendable {
     /// Top-level structure of the `evolution.json` feed.
     private struct V1: Decodable {
         /// All proposals listed in the feed.
@@ -20,7 +20,7 @@ public actor ProposalRepository {
     /// Downloads the proposal feed and stores the results.
     /// - Returns: An array of stored proposal snapshots.
     @discardableResult
-    public func fetch() async throws -> [Proposal.Snapshot] {
+    public func fetch(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) async throws -> [Proposal.Snapshot] {
         let (data, _) = try await URLSession.shared.data(from: url)
         let snapshots = try JSONDecoder().decode(V1.self, from: data).proposals
         let context = ModelContext(modelContainer)
@@ -33,7 +33,7 @@ public actor ProposalRepository {
                 }
             }
         }
-        return try context.fetch(FetchDescriptor(predicate: .true))
+        return try context.fetch(FetchDescriptor(predicate: .true, sortBy: sortDescriptor))
             .compactMap(Proposal.Snapshot.init)
     }
 
@@ -44,6 +44,25 @@ public actor ProposalRepository {
             .fetch(.id(proposalID))
             .first
             .flatMap(Proposal.Snapshot.init(object:))
+    }
+
+    /// Loads any proposals already stored in the local database.
+    /// - Parameter sortDescriptor: Ordering to apply to the returned results.
+    /// - Returns: An array of proposal snapshots from persistent storage.
+    public func load(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) -> [Proposal.Snapshot] {
+        do {
+            return try ModelContext(modelContainer)
+                .fetch(FetchDescriptor(predicate: .true, sortBy: sortDescriptor))
+                .compactMap(Proposal.Snapshot.init(object:))
+        } catch {
+            return []
+        }
+    }
+}
+
+public extension SortDescriptor<Proposal> {
+    static var proposalID: Self {
+        SortDescriptor(\Proposal.proposalID, order: .reverse)
     }
 }
 

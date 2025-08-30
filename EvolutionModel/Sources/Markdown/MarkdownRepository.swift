@@ -10,13 +10,9 @@ public actor MarkdownRepository {
     /// - Parameter proposal: The proposal whose markdown should be fetched.
     /// - Returns: A snapshot of the stored markdown content.
     @discardableResult
-    public func fetch(proposal: Proposal.Snapshot) async throws -> Markdown.Snapshot {
-        try await fetch(proposalID: proposal.id, url: MarkdownURL(link: proposal.link))
-    }
-
-    /// Fetches markdown from the provided URL and persists it.
-    private func fetch(proposalID: String, url: MarkdownURL) async throws -> Markdown.Snapshot {
-        let url = url.rawValue
+    public func fetch(with proposal: Proposal.Snapshot) async throws -> Markdown.Snapshot {
+        let proposalID = proposal.id
+        let url = MarkdownURL(link: proposal.link).rawValue
         let (data, _) = try await URLSession.shared.data(from: url)
         let text = (String(data: data, encoding: .utf8) ?? "")
             .replacingOccurrences(of: "'", with: #"\'"#)
@@ -26,5 +22,25 @@ public actor MarkdownRepository {
             context.insert(markdown)
         }
         return markdown.snapshot
+    }
+
+    /// Loads the stored markdown for the specified proposal, if available.
+    /// - Parameter proposal: The proposal whose markdown should be looked up.
+    /// - Returns: A ``Markdown/Snapshot`` when the markdown exists in storage.
+    @discardableResult
+    public func load(with proposal: Proposal.Snapshot) async throws -> Markdown.Snapshot? {
+        let context = ModelContext(modelContainer)
+        let predicate = #Predicate<Markdown> { $0.proposalID == proposal.id }
+        return try context.fetch(FetchDescriptor(predicate: predicate))
+            .first
+            .flatMap(Markdown.Snapshot.init(object:))
+    }
+
+    /// Returns the number of markdown files currently stored.
+    public func loadCount() -> Int {
+        let context = ModelContext(modelContainer)
+        let predicate = Predicate<Markdown>.true
+        let count = try? context.fetchCount(FetchDescriptor(predicate: predicate))
+        return count ?? 0
     }
 }

@@ -13,14 +13,13 @@ public struct ContentView {
     /// Model context used to access persistent data.
     @Environment(\.modelContext) private var context
 
+    @State private var viewModel: ContentViewModel
+
     /// Current tint color of the navigation bar.
     @State private var tint: Color?
 
     /// Indicates whether the list is filtered to bookmarked proposals.
     @AppStorage("isBookmarked") private var isBookmarked = false
-
-    /// Error produced when fetching proposals.
-    @State private var fetchError: Error?
 
     /// Trigger used to re-fetch proposal data.
     @State private var refresh: UUID?
@@ -55,44 +54,44 @@ public struct ContentView {
         }
     }
 
-    public init() {}
+    public init(modelContainer: ModelContainer) {
+        _viewModel = State(wrappedValue: ContentViewModel(modelContainer: modelContainer))
+    }
 }
 
 // MARK: - View
 
 extension ContentView: View {
     public var body: some View {
-        NavigationSplitView {
-            // List view
-            ProposalListView(
-                selection: $proposal,
-                status: filter,
-                isBookmarked: !bookmarks.isEmpty && isBookmarked
-            )
-            .environment(\.horizontalSizeClass, horizontal)
-            .overlay { ErrorView(error: fetchError, $refresh) }
-            .toolbar { toolbar }
-        } detail: {
-            // Detail view
-            if let proposal {
-                ContentDetailView(
-                    proposal: proposal,
-                    horizontal: horizontal,
-                    accentColor: detailTint
+        ZStack(alignment: .bottom) {
+            NavigationSplitView {
+                // List view
+                ProposalListView(
+                    selection: $proposal,
+                    status: filter,
+                    isBookmarked: !bookmarks.isEmpty && isBookmarked
                 )
-                .id(proposal)
+                .environment(\.horizontalSizeClass, horizontal)
+                .overlay { ErrorView(error: viewModel.fetchError, $refresh) }
+                .toolbar { toolbar }
+            } detail: {
+                // Detail view
+                if let proposal {
+                    ContentDetailView(
+                        proposal: proposal,
+                        horizontal: horizontal,
+                        accentColor: detailTint
+                    )
+                    .id(proposal)
+                }
+            }
+            if let progress = viewModel.downloadProgress {
+                DownloadProgressView(progress: progress)
             }
         }
         .tint(barTint)
         .task(id: refresh) {
-            fetchError = nil
-            do {
-                try await ProposalRepository(modelContainer: context.container).fetch()
-            } catch {
-                if allProposals.isEmpty {
-                    fetchError = error
-                }
-            }
+            await viewModel.fetchProposals()
         }
         .animation(.default, value: bookmarks)
         .onChange(of: allProposals.filter { $0.bookmark != nil }, initial: true) {
@@ -129,12 +128,14 @@ extension ContentView: View {
 }
 
 #Preview(traits: .proposal) {
-    ContentView()
+    @Previewable @Environment(\.modelContext) var context
+    ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)
 }
 
 @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
 #Preview("Assistive access", traits: .proposal, .assistiveAccess) {
-    ContentView()
+    @Previewable @Environment(\.modelContext) var context
+    ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)
 }
