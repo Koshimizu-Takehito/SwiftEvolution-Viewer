@@ -25,17 +25,23 @@ This project follows a modular architecture with clear separation of concerns:
 
 ### Core Modules
 
-- **EvolutionCore** - Core data models and networking layer
-- **EvolutionModel** - SwiftData models and persistence layer
+- **EvolutionModel** - SwiftData models, persistence layer, and data management
 - **EvolutionModule** - Main application logic and views
 - **EvolutionUI** - Reusable UI components and styling
 
 ### Key Components
 
-- **Proposal Management** - Fetching and caching of proposal data
+- **Proposal Management** - SwiftData-based proposal models with snapshot pattern
+- **Bookmark System** - Persistent bookmark storage and management
 - **Markdown Rendering** - Custom markdown parser with syntax highlighting
 - **State Management** - SwiftData integration for local storage
 - **Navigation** - Split view navigation for iPad and macOS
+
+### Data Models
+
+- **Proposal** - Core proposal model with SwiftData persistence
+- **Bookmark** - User bookmark management
+- **Markdown** - Markdown content caching and rendering
 
 ## Requirements
 
@@ -102,10 +108,13 @@ open SwiftEvolution.xcodeproj
 ```
 SwiftEvolution/
 ├── App/                    # Main app entry point
-├── EvolutionCore/          # Core data models and networking
-├── EvolutionModel/         # SwiftData models
-├── EvolutionModule/        # Main application logic
-├── EvolutionUI/           # Reusable UI components
+├── EvolutionModel/         # SwiftData models and data management
+│   ├── Sources/
+│   │   ├── Proposal/       # Proposal models and repository
+│   │   ├── Bookmark/       # Bookmark management
+│   │   └── Markdown/       # Markdown caching and rendering
+├── EvolutionModule/        # Main application logic and views
+├── EvolutionUI/            # Reusable UI components
 └── SwiftEvolution.xcodeproj
 ```
 
