@@ -47,13 +47,20 @@ final class ContentViewModel {
         let total = proposals.count
         let currentCount = await markdownRepository.loadCount()
         downloadProgress = DownloadProgress(total: total, current: currentCount)
-        for proposal in proposals {
-            if (try? await markdownRepository.load(with: proposal)) == nil {
-                _ = try? await markdownRepository.fetch(with: proposal)
-                try? await Task.sleep(for: .microseconds(20))
-                downloadProgress?.current += 1
+        await withThrowingTaskGroup { group in
+            for proposal in proposals {
+                if (try? await markdownRepository.load(with: proposal)) == nil {
+                    group.addTask { [self] in
+                        try await fetch(with: proposal)
+                    }
+                }
             }
         }
         downloadProgress?.current = total
+    }
+
+    private func fetch(with proposal: Proposal.Snapshot) async throws {
+        try await markdownRepository.fetch(with: proposal)
+        downloadProgress?.current += 1
     }
 }
