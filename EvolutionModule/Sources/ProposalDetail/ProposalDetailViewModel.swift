@@ -10,6 +10,10 @@ import struct SwiftUI.Color
 @Observable
 @MainActor
 final class ProposalDetailViewModel: Observable {
+    private let markdownRepository: MarkdownRepository
+    private let bookmarkRepository: BookmarkRepository
+    private let proposalRepository: ProposalRepository
+
     /// The proposal being displayed.
     private let proposal: Proposal.Snapshot
 
@@ -45,20 +49,29 @@ final class ProposalDetailViewModel: Observable {
     init(proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
         self.proposal = proposal
         self.modelContainer = modelContainer
+        self.markdownRepository = MarkdownRepository(modelContainer: modelContainer)
+        self.bookmarkRepository = BookmarkRepository(modelContainer: modelContainer)
+        self.proposalRepository = ProposalRepository(modelContainer: modelContainer)
         Task {
             await loadMarkdown()
+            await fetchMarkdown()
         }
         Task {
             await loadBookmark()
         }
     }
 
-    /// Retrieves markdown text for the proposal.
     func loadMarkdown() async {
+        if let markdown = try? await markdownRepository.load(with: proposal) {
+            items = [ProposalDetailRow](markdown: markdown)
+        }
+    }
+
+    /// Retrieves markdown text for the proposal.
+    func fetchMarkdown() async {
         fetchError = nil
         do {
-            let repository = MarkdownRepository(modelContainer: modelContainer)
-            let markdown = try await repository.fetch(proposal: proposal)
+            let markdown = try await markdownRepository.fetch(with: proposal)
             items = [ProposalDetailRow](markdown: markdown)
         } catch let error as URLError where error.code == URLError.cancelled {
             return
@@ -71,8 +84,7 @@ final class ProposalDetailViewModel: Observable {
 
     /// Loads the current bookmark state from persistent storage.
     func loadBookmark() async {
-        let repository = BookmarkRepository(modelContainer: modelContainer)
-        isBookmarked = (await repository.load(proposalID: proposal.id) != nil)
+        isBookmarked = (await bookmarkRepository.load(proposalID: proposal.id) != nil)
     }
 
     /// Persists the bookmark state for this proposal.
@@ -134,7 +146,6 @@ extension ProposalDetailViewModel {
     }
 
     private func makeMarkdown(id: some StringProtocol) async -> Proposal.Snapshot? {
-        let repository = ProposalRepository(modelContainer: modelContainer)
-        return await repository.find(by: "SE-\(String(id))")
+        await proposalRepository.find(by: "SE-\(String(id))")
     }
 }

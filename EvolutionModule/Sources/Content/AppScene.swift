@@ -7,13 +7,13 @@ import SwiftUI
 
 /// Root scene for the application that wires up model containers and commands.
 @MainActor
-public struct AppScene<Content: View> {
-    private var content: () -> Content
+public struct AppScene {
+    @State private var modelContainer = try! ModelContainer(
+        for: Bookmark.self, Markdown.self, Proposal.self
+    )
 
     /// Creates the scene with the provided root content view.
-    public init(@ViewBuilder content: @escaping () -> Content) {
-        self.content = content
-    }
+    public init() { }
 }
 
 // MARK: - Scene
@@ -22,10 +22,8 @@ extension AppScene: Scene {
     /// Body of the SwiftUI scene that hosts the app's content and commands.
     public var body: some Scene {
         WindowGroup {
-            content()
-                .modelContainer(
-                    for: [Bookmark.self, Markdown.self, Proposal.self]
-                )
+            ContentView(modelContainer: modelContainer)
+                .modelContainer(modelContainer)
         }
         .commands {
             FilterCommands()
@@ -41,6 +39,7 @@ extension AppScene: Scene {
 // MARK: - Preview
 
 #Preview(traits: .proposal) {
-    ContentView()
+    @Previewable @Environment(\.modelContext) var context
+    ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)
 }
