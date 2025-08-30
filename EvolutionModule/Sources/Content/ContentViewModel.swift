@@ -13,8 +13,8 @@ final class ContentViewModel {
     /// All loaded proposals from storage.
     private(set) var proposals: [Proposal.Snapshot] = [] {
         didSet {
-            Task.detached { [self] in
-                await self.fetchMarkdowns()
+            Task { [self] in
+                await fetchMarkdowns()
             }
         }
     }

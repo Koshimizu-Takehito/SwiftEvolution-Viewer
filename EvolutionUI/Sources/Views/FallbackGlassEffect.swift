@@ -12,6 +12,7 @@ public struct FallbackGlassEffect<S: Shape>: ViewModifier {
             content.glassEffect(in: shape)
         } else {
             content.background(.ultraThinMaterial, in: shape)
+                .opacity(0.5)
         }
     }
 }
