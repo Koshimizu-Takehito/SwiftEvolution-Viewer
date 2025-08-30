@@ -10,6 +10,9 @@ import SwiftUI
 
 // MARK: - ProposalDetailView
 
+/// Displays the full markdown contents of a single Swift Evolution proposal
+/// and manages navigation to related proposals or sections within the
+/// document.
 @MainActor
 struct ProposalDetailView {
     /// Navigation path for pushing additional proposal details.
@@ -85,6 +88,8 @@ extension ProposalDetailView: View {
 }
 
 extension ProposalDetailView {
+    /// Creates an ``OpenURLAction`` that interprets links inside the markdown
+    /// content and routes them to the appropriate destination.
     fileprivate func openURLAction(with proxy: ScrollViewProxy) -> OpenURLAction {
         OpenURLAction { url in
             Task {

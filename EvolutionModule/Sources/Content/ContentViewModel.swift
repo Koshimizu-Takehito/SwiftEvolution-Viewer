@@ -28,11 +28,11 @@ final class ContentViewModel {
         Task { proposals = await proposalRepository.load() }
     }
 
-    /// プロポーザルの取得
+    /// Retrieves the list of proposals from the remote feed and stores them.
     func fetchProposals() async {
         fetchError = nil
         do {
-            // リストデータの取得
+            // Load proposal list data.
             proposals = try await proposalRepository.fetch()
         } catch {
             if proposals.isEmpty {
@@ -41,7 +41,8 @@ final class ContentViewModel {
         }
     }
 
-    /// マークダウンの取得
+    /// Loads and caches markdown documents for each proposal, updating the
+    /// ``downloadProgress`` as items are fetched.
     func fetchMarkdowns() async {
         let total = proposals.count
         let currentCount = await markdownRepository.loadCount()

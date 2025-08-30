@@ -2,26 +2,38 @@ import SwiftUI
 
 // MARK: - DownloadProgressView
 
+/// Represents the current state of a multi-item download operation.
 public struct DownloadProgress: Hashable, Sendable {
+    /// Total number of items expected to be downloaded.
     public var total: Int
+    /// Number of items that have finished downloading.
     public var current: Int
 
+    /// Creates a new progress value.
+    /// - Parameters:
+    ///   - total: The total number of items to be fetched.
+    ///   - current: The number of items already fetched.
     public init(total: Int, current: Int) {
         self.total = total
         self.current = current
     }
 }
 
+/// A heads-up display that shows the progress of downloading proposal markdown.
 public struct DownloadProgressView: View {
+    /// Backing progress value that drives the view.
     private var progress: DownloadProgress
 
+    /// Total number of items expected.
     private var total: Int {
         progress.total
     }
+    /// Number of items retrieved so far.
     private var current: Int {
         progress.current
     }
 
+    /// Creates a new progress view for the given state.
     public init(progress: DownloadProgress) {
         self.progress = progress
     }
@@ -51,15 +63,18 @@ public struct DownloadProgressView: View {
         .tint(.blue)
     }
 
+    /// Text describing the current progress in a localized format.
     var description: LocalizedStringResource {
-        let len = String(total).count
-        return "データ取得中... ( \(String(format: "%0\(len)ld", current)) / \(total) )"
+        let digits = String(total).count
+        return "Downloading... ( \(String(format: "%0\(digits)ld", current)) / \(total) )"
     }
 
+    /// Ratio of completed items to total items.
     var ratio: Double {
         Double(current) / Double(total)
     }
 
+    /// Opacity used to hide the view when no download is in progress.
     var opacity: Double {
         ratio > 0.0 && ratio < 1.0 ? 1.0 : 0.0
     }
