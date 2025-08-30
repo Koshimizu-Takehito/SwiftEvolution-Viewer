@@ -46,6 +46,9 @@ public actor ProposalRepository: Sendable {
             .flatMap(Proposal.Snapshot.init(object:))
     }
 
+    /// Loads any proposals already stored in the local database.
+    /// - Parameter sortDescriptor: Ordering to apply to the returned results.
+    /// - Returns: An array of proposal snapshots from persistent storage.
     public func load(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) -> [Proposal.Snapshot] {
         do {
             return try ModelContext(modelContainer)

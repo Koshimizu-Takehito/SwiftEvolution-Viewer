@@ -1,6 +1,10 @@
 import SwiftUI
 
+/// Applies a glass-like material, falling back to ``.ultraThinMaterial`` on
+/// platforms where the native ``View.glassEffect(in:)`` modifier is
+/// unavailable.
 public struct FallbackGlassEffect<S: Shape>: ViewModifier {
+    /// Shape that defines the region of the glass effect.
     var shape: S
 
     public func body(content: Content) -> some View {
@@ -13,6 +17,9 @@ public struct FallbackGlassEffect<S: Shape>: ViewModifier {
 }
 
 public extension View {
+    /// Wraps the view in a platform-appropriate glass effect using the
+    /// provided shape.
+    /// - Parameter shape: The shape that bounds the glass effect.
     func fallbackGlassEffect<S: Shape>(shape: S) -> some View {
         modifier(FallbackGlassEffect(shape: shape))
     }

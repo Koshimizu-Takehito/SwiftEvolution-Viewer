@@ -24,6 +24,9 @@ public actor MarkdownRepository {
         return markdown.snapshot
     }
 
+    /// Loads the stored markdown for the specified proposal, if available.
+    /// - Parameter proposal: The proposal whose markdown should be looked up.
+    /// - Returns: A ``Markdown/Snapshot`` when the markdown exists in storage.
     @discardableResult
     public func load(with proposal: Proposal.Snapshot) async throws -> Markdown.Snapshot? {
         let context = ModelContext(modelContainer)
@@ -33,6 +36,7 @@ public actor MarkdownRepository {
             .flatMap(Markdown.Snapshot.init(object:))
     }
 
+    /// Returns the number of markdown files currently stored.
     public func loadCount() -> Int {
         let context = ModelContext(modelContainer)
         let predicate = Predicate<Markdown>.true

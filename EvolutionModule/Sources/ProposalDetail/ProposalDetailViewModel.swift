@@ -61,6 +61,8 @@ final class ProposalDetailViewModel: Observable {
         }
     }
 
+    /// Loads cached markdown for the proposal if it has already been
+    /// downloaded.
     func loadMarkdown() async {
         if let markdown = try? await markdownRepository.load(with: proposal) {
             items = [ProposalDetailRow](markdown: markdown)
