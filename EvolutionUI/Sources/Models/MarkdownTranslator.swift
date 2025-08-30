@@ -31,6 +31,7 @@ public struct LinkReader: MarkupWalker {
 }
 
 /// Performs translation of markdown content between locales.
+@available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
 public actor MarkdownTranslator {
     private typealias Rewriter = TranslatingMarkupRewriter
     private var source: Locale.Language
@@ -73,6 +74,7 @@ public actor MarkdownTranslator {
 }
 
 /// Synchronously rewrites markup by translating each text fragment.
+@available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
 public struct MarkupTranslator: AsyncMarkupRewriter {
     private let translator: TranslationSession
 
@@ -86,6 +88,7 @@ public struct MarkupTranslator: AsyncMarkupRewriter {
 }
 
 /// Asynchronously rewrites markup and notifies a callback with each replacement.
+@available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
 struct TranslatingMarkupRewriter: AsyncMarkupRewriter {
     private let translator: TranslationSession
 

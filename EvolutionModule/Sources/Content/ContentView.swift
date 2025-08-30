@@ -116,7 +116,9 @@ extension ContentView: View {
                     .tint(.darkText)
             }
         }
-        ToolbarSpacer()
+        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+            ToolbarSpacer()
+        }
         if !allProposals.isEmpty {
             ToolbarItem {
                 ProposalStatusPicker()
@@ -131,6 +133,7 @@ extension ContentView: View {
         .environment(\.colorScheme, .dark)
 }
 
+@available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
 #Preview("Assistive access", traits: .proposal, .assistiveAccess) {
     ContentView()
         .environment(\.colorScheme, .dark)
