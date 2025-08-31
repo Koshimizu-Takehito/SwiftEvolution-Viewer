@@ -8,8 +8,8 @@ import SwiftUI
 @Observable
 @MainActor
 final class ContentViewModel {
-    @ObservationIgnored private let proposalRepository: ProposalRepository
-    @ObservationIgnored private let markdownRepository: MarkdownRepository
+    private let proposalRepository: ProposalRepository
+    private let markdownRepository: MarkdownRepository
 
     /// All loaded proposals from storage.
     private(set) var proposals: [Proposal.Snapshot] = [] {
