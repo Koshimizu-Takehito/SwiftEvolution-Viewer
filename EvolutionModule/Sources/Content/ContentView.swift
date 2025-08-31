@@ -134,14 +134,14 @@ extension ContentView: View {
     }
 }
 
-#Preview(traits: .proposal) {
+#Preview(traits: .evolution) {
     @Previewable @Environment(\.modelContext) var context
     ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)
 }
 
 @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
-#Preview("Assistive access", traits: .proposal, .assistiveAccess) {
+#Preview("Assistive access", traits: .evolution, .assistiveAccess) {
     @Previewable @Environment(\.modelContext) var context
     ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)

@@ -38,7 +38,7 @@ extension AppScene: Scene {
 
 // MARK: - Preview
 
-#Preview(traits: .proposal) {
+#Preview(traits: .evolution) {
     @Previewable @Environment(\.modelContext) var context
     ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)
