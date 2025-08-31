@@ -93,6 +93,7 @@ extension ContentView: View {
             }
             if let progress = viewModel.downloadProgress {
                 DownloadProgressView(progress: progress)
+                    .frame(maxWidth: 375)
             }
         }
         .tint(barTint)
