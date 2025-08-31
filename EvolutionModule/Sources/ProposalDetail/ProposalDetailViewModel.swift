@@ -44,14 +44,10 @@ final class ProposalDetailViewModel: Observable {
         }
     }
 
-    /// Model container used to access repositories.
-    @ObservationIgnored private let modelContainer: ModelContainer
-
     /// Creates a view model for the provided proposal using the supplied
     /// `ModelContainer` to access repositories.
     init(proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
         self.proposal = proposal
-        self.modelContainer = modelContainer
         self.markdownRepository = MarkdownRepository(modelContainer: modelContainer)
         self.bookmarkRepository = BookmarkRepository(modelContainer: modelContainer)
         self.proposalRepository = ProposalRepository(modelContainer: modelContainer)
@@ -94,7 +90,7 @@ final class ProposalDetailViewModel: Observable {
 
     /// Persists the bookmark state for this proposal.
     private func save(isBookmarked: Bool) async {
-        let repository = BookmarkRepository(modelContainer: modelContainer)
+        let repository = bookmarkRepository
         try? await repository.update(proposal: proposal, isBookmarked: isBookmarked)
     }
 
