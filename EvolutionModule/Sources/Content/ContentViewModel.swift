@@ -6,7 +6,6 @@ import SwiftUI
 @Observable
 @MainActor
 final class ContentViewModel {
-    @ObservationIgnored private let modelContainer: ModelContainer
     @ObservationIgnored private let proposalRepository: ProposalRepository
     @ObservationIgnored private let markdownRepository: MarkdownRepository
 
@@ -22,7 +21,6 @@ final class ContentViewModel {
     private(set) var downloadProgress: DownloadProgress?
 
     init(modelContainer: ModelContainer) {
-        self.modelContainer = modelContainer
         self.proposalRepository = ProposalRepository(modelContainer: modelContainer)
         self.markdownRepository = MarkdownRepository(modelContainer: modelContainer)
         Task { proposals = await proposalRepository.load() }

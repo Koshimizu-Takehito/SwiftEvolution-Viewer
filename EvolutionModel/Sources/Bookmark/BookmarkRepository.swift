@@ -11,7 +11,6 @@ import SwiftData
 public actor BookmarkRepository {
     /// Returns all stored bookmarks as immutable snapshots.
     public func snapshots() -> [Bookmark.Snapshot] {
-        let modelContext = ModelContext(modelContainer)
         let result = try? modelContext.fetch(FetchDescriptor<Bookmark>(predicate: .true))
         return result?.map(Bookmark.Snapshot.init) ?? []
     }
@@ -23,7 +22,7 @@ public actor BookmarkRepository {
         let descriptor = FetchDescriptor(predicate: #Predicate<Bookmark> {
             $0.proposalID == proposalID
         })
-        let object = try? ModelContext(modelContainer)
+        let object = try? modelContext
             .fetch(descriptor)
             .first
         return object.flatMap(Bookmark.Snapshot.init(object:))
@@ -43,7 +42,7 @@ public actor BookmarkRepository {
 
     /// Inserts a new bookmark if one does not already exist.
     private func add(proposal: Proposal.Snapshot) throws {
-        let context = ModelContext(modelContainer)
+        let context = modelContext
         let predicate = #Predicate<Proposal> { $0.proposalID == proposal.id }
         let descriptor = FetchDescriptor(predicate: predicate)
         let proposal = try context.fetch(descriptor).first
@@ -59,7 +58,7 @@ public actor BookmarkRepository {
         let descriptor = FetchDescriptor(predicate: #Predicate<Bookmark> {
             $0.proposalID == proposal.id
         })
-        let context = ModelContext(modelContainer)
+        let context = modelContext
         try context.transaction {
             try context.fetch(descriptor).forEach { object in
                 context.delete(object)

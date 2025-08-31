@@ -16,7 +16,7 @@ public actor MarkdownRepository {
         let (data, _) = try await URLSession.shared.data(from: url)
         let text = (String(data: data, encoding: .utf8) ?? "")
             .replacingOccurrences(of: "'", with: #"\'"#)
-        let context = ModelContext(modelContainer)
+        let context = modelContext
         let markdown = Markdown(url: url, proposalID: proposalID, text: text)
         try context.transaction {
             context.insert(markdown)
@@ -29,18 +29,16 @@ public actor MarkdownRepository {
     /// - Returns: A ``Markdown/Snapshot`` when the markdown exists in storage.
     @discardableResult
     public func load(with proposal: Proposal.Snapshot) async throws -> Markdown.Snapshot? {
-        let context = ModelContext(modelContainer)
         let predicate = #Predicate<Markdown> { $0.proposalID == proposal.id }
-        return try context.fetch(FetchDescriptor(predicate: predicate))
+        return try modelContext.fetch(FetchDescriptor(predicate: predicate))
             .first
             .flatMap(Markdown.Snapshot.init(object:))
     }
 
     /// Returns the number of markdown files currently stored.
     public func loadCount() -> Int {
-        let context = ModelContext(modelContainer)
         let predicate = Predicate<Markdown>.true
-        let count = try? context.fetchCount(FetchDescriptor(predicate: predicate))
+        let count = try? modelContext.fetchCount(FetchDescriptor(predicate: predicate))
         return count ?? 0
     }
 }

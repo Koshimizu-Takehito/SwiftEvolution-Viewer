@@ -5,7 +5,7 @@ import SwiftData
 
 /// Retrieves and persists proposal metadata from the Swift Evolution feed.
 @ModelActor
-public actor ProposalRepository: Sendable {
+public actor ProposalRepository {
     /// Top-level structure of the `evolution.json` feed.
     private struct V1: Decodable {
         /// All proposals listed in the feed.
@@ -23,7 +23,7 @@ public actor ProposalRepository: Sendable {
     public func fetch(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) async throws -> [Proposal.Snapshot] {
         let (data, _) = try await URLSession.shared.data(from: url)
         let snapshots = try JSONDecoder().decode(V1.self, from: data).proposals
-        let context = ModelContext(modelContainer)
+        let context = modelContext
         try context.transaction {
             snapshots.forEach { proposal in
                 if let object = try? context.fetch(.id(proposal.id)).first {
@@ -40,7 +40,7 @@ public actor ProposalRepository: Sendable {
     /// Finds a proposal by its identifier if it exists in storage.
     /// - Parameter proposalID: The proposal identifier to search for.
     public func find(by proposalID: String) -> Proposal.Snapshot? {
-        try? ModelContext(modelContainer)
+        try? modelContext
             .fetch(.id(proposalID))
             .first
             .flatMap(Proposal.Snapshot.init(object:))
@@ -51,26 +51,11 @@ public actor ProposalRepository: Sendable {
     /// - Returns: An array of proposal snapshots from persistent storage.
     public func load(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) -> [Proposal.Snapshot] {
         do {
-            return try ModelContext(modelContainer)
+            return try modelContext
                 .fetch(FetchDescriptor(predicate: .true, sortBy: sortDescriptor))
                 .compactMap(Proposal.Snapshot.init(object:))
         } catch {
             return []
         }
-    }
-}
-
-public extension SortDescriptor<Proposal> {
-    static var proposalID: Self {
-        SortDescriptor(\Proposal.proposalID, order: .reverse)
-    }
-}
-
-private extension FetchDescriptor<Proposal> {
-    /// Convenience helper for building a descriptor that looks up a proposal by ID.
-    static func id(_ proposalID: String) -> Self {
-        FetchDescriptor(predicate: #Predicate<Proposal> {
-            $0.proposalID == proposalID
-        })
     }
 }

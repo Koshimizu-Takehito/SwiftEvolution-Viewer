@@ -11,8 +11,7 @@ public struct FallbackGlassEffect<S: Shape>: ViewModifier {
         if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
             content.glassEffect(in: shape)
         } else {
-            content.background(.ultraThinMaterial, in: shape)
-                .opacity(0.5)
+            content.background(.ultraThinMaterial.opacity(0.7), in: shape)
         }
     }
 }
