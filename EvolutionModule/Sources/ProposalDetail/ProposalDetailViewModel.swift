@@ -7,6 +7,7 @@ import SwiftData
 
 import struct SwiftUI.Color
 
+/// Manages loading, bookmarking, and translation for an individual proposal.
 @Observable
 @MainActor
 final class ProposalDetailViewModel: Observable {
@@ -46,6 +47,8 @@ final class ProposalDetailViewModel: Observable {
     /// Model container used to access repositories.
     @ObservationIgnored private let modelContainer: ModelContainer
 
+    /// Creates a view model for the provided proposal using the supplied
+    /// `ModelContainer` to access repositories.
     init(proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
         self.proposal = proposal
         self.modelContainer = modelContainer

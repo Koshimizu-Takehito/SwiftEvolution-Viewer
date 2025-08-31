@@ -36,6 +36,8 @@ public struct ContentView {
     /// Proposal currently selected in the list view.
     @State private var proposal: Proposal.Snapshot?
 
+    /// Tint color applied to the detail view's navigation elements on compact
+    /// devices. On larger screens a constant value is used instead.
     private var detailTint: Binding<Color?> {
         switch horizontal {
         case .compact:
@@ -45,6 +47,8 @@ public struct ContentView {
         }
     }
 
+    /// Tint applied to the navigation bar. Falls back to the system dark text
+    /// color when no custom tint is active.
     private var barTint: Color? {
         switch horizontal {
         case .compact:
@@ -54,6 +58,8 @@ public struct ContentView {
         }
     }
 
+    /// Creates the view, injecting the shared model container used by child
+    /// views and the view model.
     public init(modelContainer: ModelContainer) {
         _viewModel = State(wrappedValue: ContentViewModel(modelContainer: modelContainer))
     }
