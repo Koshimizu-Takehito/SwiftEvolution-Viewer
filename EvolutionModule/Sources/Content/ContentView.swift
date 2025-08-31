@@ -19,7 +19,7 @@ public struct ContentView {
     @State private var tint: Color?
 
     /// Indicates whether the list is filtered to bookmarked proposals.
-    @AppStorage("isBookmarked") private var isBookmarked = false
+    @AppStorage("showsBookmark") private var showsBookmark = false
 
     /// Trigger used to re-fetch proposal data.
     @State private var refresh: UUID?
@@ -75,7 +75,7 @@ extension ContentView: View {
                 ProposalListView(
                     selection: $proposal,
                     status: filter,
-                    isBookmarked: !bookmarks.isEmpty && isBookmarked
+                    isBookmarked: !bookmarks.isEmpty && showsBookmark
                 )
                 .environment(\.horizontalSizeClass, horizontal)
                 .overlay { ErrorView(error: viewModel.fetchError, $refresh) }
@@ -111,12 +111,12 @@ extension ContentView: View {
     private var toolbar: some ToolbarContent {
         if !bookmarks.isEmpty {
             ToolbarItem {
-                BookmarkButton(isBookmarked: $isBookmarked)
+                BookmarkButton(isBookmarked: $showsBookmark)
                     .disabled(bookmarks.isEmpty)
                     .opacity(bookmarks.isEmpty ? 0 : 1)
                     .onChange(of: bookmarks.isEmpty) { _, isEmpty in
                         if isEmpty {
-                            isBookmarked = false
+                            showsBookmark = false
                         }
                     }
                     .tint(.darkText)
@@ -134,14 +134,14 @@ extension ContentView: View {
     }
 }
 
-#Preview(traits: .proposal) {
+#Preview(traits: .evolution) {
     @Previewable @Environment(\.modelContext) var context
     ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)
 }
 
 @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
-#Preview("Assistive access", traits: .proposal, .assistiveAccess) {
+#Preview("Assistive access", traits: .evolution, .assistiveAccess) {
     @Previewable @Environment(\.modelContext) var context
     ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)

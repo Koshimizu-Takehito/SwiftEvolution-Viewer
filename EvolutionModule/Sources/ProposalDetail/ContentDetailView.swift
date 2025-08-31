@@ -46,7 +46,7 @@ struct ContentDetailView: View {
     }
 }
 
-#Preview(traits: .proposal) {
+#Preview(traits: .evolution) {
     ContentDetailView(
         proposal: .init(
             id: "SE-0418",

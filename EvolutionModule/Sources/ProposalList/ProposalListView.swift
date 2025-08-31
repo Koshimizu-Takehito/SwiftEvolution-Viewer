@@ -49,7 +49,7 @@ struct ProposalListView: View {
     }
 }
 
-#Preview(traits: .proposal) {
+#Preview(traits: .evolution) {
     @Previewable @Environment(\.modelContext) var context
     ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)

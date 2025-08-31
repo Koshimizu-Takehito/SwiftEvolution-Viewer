@@ -126,7 +126,7 @@ extension ProposalDetailView {
     }
 }
 
-#Preview(traits: .proposal) {
+#Preview(traits: .evolution) {
     @Previewable @Environment(\.modelContext) var context
     NavigationStack {
         ProposalDetailView.init(
