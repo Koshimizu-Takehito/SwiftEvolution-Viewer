@@ -29,6 +29,8 @@ extension ProposalDetailView.NavigationBar: ToolbarContent {
 extension ProposalDetailView.NavigationBar {
     @ViewBuilder
     @available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
+    /// Button that toggles translation of the proposal's markdown content.
+    /// Displays a progress indicator while translation is in progress.
     fileprivate func translateButton() -> some View {
         if !viewModel.translating {
             Button("Translate", systemImage: "character.bubble") {
