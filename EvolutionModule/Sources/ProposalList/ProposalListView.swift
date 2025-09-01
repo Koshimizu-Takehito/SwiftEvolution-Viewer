@@ -6,20 +6,39 @@ import SwiftUI
 // MARK: - ListView
 
 /// Displays a list of proposals and manages selection state.
-struct ProposalListView: View {
-    @Environment(\.horizontalSizeClass) private var horizontal
-    @Binding var selection: Proposal.Snapshot?
-    @Query private var proposals: [Proposal]
+@MainActor
+struct ProposalListView {
+    @Environment(\.horizontalSizeClass)
+    private var horizontal
 
-    init(
-        selection: Binding<Proposal.Snapshot?>,
-        status: [Proposal.Status.State: Bool],
-        isBookmarked: Bool
-    ) {
-        _selection = selection
-        _proposals = Query(status, isBookmarked: isBookmarked)
+    @Binding
+    var selection: Proposal.Snapshot?
+
+    @Binding
+    var isBookmarked: Bool
+
+    @Query(filter: .filter(status, isBookmarked), sort: \.proposalID, order: .reverse)
+    private var proposals: [Proposal]
+
+    private var hasBookmark: Bool {
+        proposals.contains { $0.bookmark != nil }
     }
+}
 
+extension ProposalListView {
+    @TaskLocal private static var status: [Proposal.Status.State: Bool] = [:]
+    @TaskLocal private static var isBookmarked: Bool = false
+
+    init(_ selection: Binding<Proposal.Snapshot?>, isBookmarked: Binding<Bool>, status: [Proposal.Status.State: Bool]) {
+        self = Self.$status.withValue(status) {
+            Self.$isBookmarked.withValue(isBookmarked.wrappedValue) {
+                Self.init(selection: selection, isBookmarked: isBookmarked)
+            }
+        }
+    }
+}
+
+extension ProposalListView: View {
     var body: some View {
         List(selection: $selection) {
             ForEach(proposals) { proposal in
@@ -32,6 +51,7 @@ struct ProposalListView: View {
         .tint(.darkText.opacity(0.2))
         .navigationTitle("Swift Evolution")
         .onAppear(perform: selectFirstItem)
+        .toolbar { toolbar }
     }
 
     /// Selects the first proposal when running on larger displays.
@@ -46,6 +66,23 @@ struct ProposalListView: View {
                 selection = .init(object: proposal)
             }
         #endif
+    }
+
+    @ToolbarContentBuilder
+    private var toolbar: some ToolbarContent {
+        if hasBookmark {
+            ToolbarItem {
+                BookmarkButton(isBookmarked: $isBookmarked)
+                    .tint(.darkText)
+            }
+        }
+        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+            ToolbarSpacer()
+        }
+        ToolbarItem {
+            ProposalStatusPicker()
+                .tint(.darkText)
+        }
     }
 }
 

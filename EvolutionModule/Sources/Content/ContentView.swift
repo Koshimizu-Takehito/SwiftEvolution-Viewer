@@ -24,14 +24,8 @@ public struct ContentView {
     /// Trigger used to re-fetch proposal data.
     @State private var refresh: UUID?
 
-    /// All loaded proposals from storage.
-    @Query private var allProposals: [Proposal]
-
     /// Currently selected status filter.
     @StatusFilter private var filter
-
-    /// Cached proposals that have been bookmarked.
-    @State private var bookmarks: [Proposal] = []
 
     /// Proposal currently selected in the list view.
     @State private var proposal: Proposal.Snapshot?
@@ -72,14 +66,11 @@ extension ContentView: View {
         ZStack(alignment: .bottom) {
             NavigationSplitView {
                 // List view
-                ProposalListView(
-                    selection: $proposal,
-                    status: filter,
-                    isBookmarked: !bookmarks.isEmpty && showsBookmark
-                )
-                .environment(\.horizontalSizeClass, horizontal)
-                .overlay { ErrorView(error: viewModel.fetchError, $refresh) }
-                .toolbar { toolbar }
+                ProposalListView($proposal, isBookmarked: $showsBookmark, status: filter)
+                    .environment(\.horizontalSizeClass, horizontal)
+                    .overlay {
+                        ErrorView(error: viewModel.fetchError, $refresh)
+                    }
             } detail: {
                 // Detail view
                 if let proposal {
@@ -99,37 +90,6 @@ extension ContentView: View {
         .tint(barTint)
         .task(id: refresh) {
             await viewModel.fetchProposals()
-        }
-        .animation(.default, value: bookmarks)
-        .onChange(of: allProposals.filter { $0.bookmark != nil }, initial: true) {
-            bookmarks = $1
-        }
-    }
-
-    /// Toolbar content for the proposal list view.
-    @ToolbarContentBuilder
-    private var toolbar: some ToolbarContent {
-        if !bookmarks.isEmpty {
-            ToolbarItem {
-                BookmarkButton(isBookmarked: $showsBookmark)
-                    .disabled(bookmarks.isEmpty)
-                    .opacity(bookmarks.isEmpty ? 0 : 1)
-                    .onChange(of: bookmarks.isEmpty) { _, isEmpty in
-                        if isEmpty {
-                            showsBookmark = false
-                        }
-                    }
-                    .tint(.darkText)
-            }
-        }
-        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
-            ToolbarSpacer()
-        }
-        if !allProposals.isEmpty {
-            ToolbarItem {
-                ProposalStatusPicker()
-                    .tint(.darkText)
-            }
         }
     }
 }
