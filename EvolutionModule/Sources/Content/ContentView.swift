@@ -10,9 +10,6 @@ import SwiftUI
 public struct ContentView {
     @Environment(\.horizontalSizeClass) private var horizontal
 
-    /// Model context used to access persistent data.
-    @Environment(\.modelContext) private var context
-
     @State private var viewModel: ContentViewModel
 
     /// Current tint color of the navigation bar.
@@ -55,7 +52,7 @@ public struct ContentView {
     /// Creates the view, injecting the shared model container used by child
     /// views and the view model.
     public init(modelContainer: ModelContainer) {
-        _viewModel = State(wrappedValue: ContentViewModel(modelContainer: modelContainer))
+        viewModel = ContentViewModel(modelContainer: modelContainer)
     }
 }
 
@@ -95,13 +92,6 @@ extension ContentView: View {
 }
 
 #Preview(traits: .evolution) {
-    @Previewable @Environment(\.modelContext) var context
-    ContentView(modelContainer: context.container)
-        .environment(\.colorScheme, .dark)
-}
-
-@available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *)
-#Preview("Assistive access", traits: .evolution, .assistiveAccess) {
     @Previewable @Environment(\.modelContext) var context
     ContentView(modelContainer: context.container)
         .environment(\.colorScheme, .dark)
