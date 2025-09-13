@@ -10,16 +10,12 @@ import SwiftUI
 public struct ContentView {
     @Environment(\.horizontalSizeClass) private var horizontal
 
-    @State private var viewModel: ContentViewModel
+    @Environment(ContentViewModel.self) private var viewModel
 
     /// Current tint color of the navigation bar.
     @State private var tint: Color?
 
-    /// Indicates whether the list is filtered to bookmarked proposals.
-    @AppStorage("showsBookmark") private var showsBookmark = false
-
-    /// Trigger used to re-fetch proposal data.
-    @State private var refresh: UUID?
+    private var mode: ProposalListMode
 
     /// Currently selected status filter.
     @StatusFilter private var filter
@@ -49,10 +45,8 @@ public struct ContentView {
         }
     }
 
-    /// Creates the view, injecting the shared model container used by child
-    /// views and the view model.
-    public init(modelContainer: ModelContainer) {
-        viewModel = ContentViewModel(modelContainer: modelContainer)
+    public init(mode: ProposalListMode = .all) {
+        self.mode = mode
     }
 }
 
@@ -63,11 +57,8 @@ extension ContentView: View {
         ZStack(alignment: .bottom) {
             NavigationSplitView {
                 // List view
-                ProposalListView($proposal, isBookmarked: $showsBookmark, status: filter)
+                ProposalListView($proposal, mode: mode, status: filter)
                     .environment(\.horizontalSizeClass, horizontal)
-                    .overlay {
-                        ErrorView(error: viewModel.fetchError, $refresh)
-                    }
             } detail: {
                 // Detail view
                 if let proposal {
@@ -76,7 +67,7 @@ extension ContentView: View {
                         horizontal: horizontal,
                         accentColor: detailTint
                     )
-                    .id(proposal)
+                    .id(proposal.id)
                 }
             }
             if let progress = viewModel.downloadProgress {
@@ -85,14 +76,14 @@ extension ContentView: View {
             }
         }
         .tint(barTint)
-        .task(id: refresh) {
-            await viewModel.fetchProposals()
-        }
     }
 }
 
 #Preview(traits: .evolution) {
-    @Previewable @Environment(\.modelContext) var context
-    ContentView(modelContainer: context.container)
+    @Previewable @Environment(ContentViewModel.self) var viewModel
+    ContentView()
         .environment(\.colorScheme, .dark)
+        .task {
+            await viewModel.fetchProposals()
+        }
 }

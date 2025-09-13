@@ -16,12 +16,7 @@ public struct ErrorView: View {
         Group {
             if let error {
                 ContentUnavailableView {
-                    switch error {
-                    case is URLError:
-                        Label("Connection issue", systemImage: "wifi.slash")
-                    default:
-                        Label("Error", systemImage: "exclamationmark.triangle")
-                    }
+                    Label("Error", systemImage: "exclamationmark.triangle")
                 } description: {
                     Text(error.localizedDescription)
                 } actions: {

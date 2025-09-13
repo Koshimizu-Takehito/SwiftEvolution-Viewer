@@ -14,10 +14,7 @@ struct ProposalListView {
     @Binding
     var selection: Proposal.Snapshot?
 
-    @Binding
-    var isBookmarked: Bool
-
-    @Query(filter: .filter(status, isBookmarked), sort: \.proposalID, order: .reverse)
+    @Query(filter: .predicate(mode, status), sort: \.proposalID, order: .reverse)
     private var proposals: [Proposal]
 
     private var hasBookmark: Bool {
@@ -26,13 +23,13 @@ struct ProposalListView {
 }
 
 extension ProposalListView {
+    @TaskLocal private static var mode: ProposalListMode = .all
     @TaskLocal private static var status: [Proposal.Status.State: Bool] = [:]
-    @TaskLocal private static var isBookmarked: Bool = false
 
-    init(_ selection: Binding<Proposal.Snapshot?>, isBookmarked: Binding<Bool>, status: [Proposal.Status.State: Bool]) {
+    init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [Proposal.Status.State: Bool]) {
         self = Self.$status.withValue(status) {
-            Self.$isBookmarked.withValue(isBookmarked.wrappedValue) {
-                Self.init(selection: selection, isBookmarked: isBookmarked)
+            Self.$mode.withValue(mode) {
+                Self.init(selection: selection)
             }
         }
     }
@@ -70,15 +67,6 @@ extension ProposalListView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        if hasBookmark {
-            ToolbarItem {
-                BookmarkButton(isBookmarked: $isBookmarked)
-                    .tint(.darkText)
-            }
-        }
-        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
-            ToolbarSpacer()
-        }
         ToolbarItem {
             ProposalStatusPicker()
                 .tint(.darkText)
@@ -87,7 +75,6 @@ extension ProposalListView: View {
 }
 
 #Preview(traits: .evolution) {
-    @Previewable @Environment(\.modelContext) var context
-    ContentView(modelContainer: context.container)
+    ContentRootView()
         .environment(\.colorScheme, .dark)
 }

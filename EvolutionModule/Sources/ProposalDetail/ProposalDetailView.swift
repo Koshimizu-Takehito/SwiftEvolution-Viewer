@@ -130,7 +130,7 @@ extension ProposalDetailView {
     @Previewable @Environment(\.modelContext) var context
     NavigationStack {
         ProposalDetailView.init(
-            path: .fake,
+            path: .constant(NavigationPath()),
             proposal: .init(
                 id: "SE-0418",
                 link: "0418-inferring-sendable-for-methods.md",
