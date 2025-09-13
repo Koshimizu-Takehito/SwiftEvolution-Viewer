@@ -13,15 +13,11 @@ struct ProposalListView {
 
     @Binding
     var selection: Proposal.Snapshot?
-
+    private let status: [Proposal.Status.State: Bool]
     private let mode: ProposalListMode
 
     @Query(filter: .predicate(mode, status), sort: \.proposalID, order: .reverse)
     private var proposals: [Proposal]
-
-    private var hasBookmark: Bool {
-        proposals.contains { $0.bookmark != nil }
-    }
 }
 
 extension ProposalListView {
@@ -31,7 +27,7 @@ extension ProposalListView {
     init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [Proposal.Status.State: Bool]) {
         self = Self.$status.withValue(status) {
             Self.$mode.withValue(mode) {
-                Self.init(selection: selection, mode: mode)
+                Self.init(selection: selection, status: status, mode: mode)
             }
         }
     }
@@ -45,6 +41,9 @@ extension ProposalListView: View {
                     ProposalListCell(proposal: proposal)
                 }
             }
+        }
+        .overlay {
+            emptyView
         }
         .animation(.default, value: proposals)
         .tint(.darkText.opacity(0.2))
@@ -83,11 +82,25 @@ extension ProposalListView: View {
     private var navigationTitle: LocalizedStringResource {
         switch mode {
         case .all:
-            "Proposal"
+            "Swift Evolution"
         case .bookmark:
             "Bookmark"
         case .search:
             "Search"
+        }
+    }
+
+    @ViewBuilder
+    private var emptyView: some View {
+        switch mode {
+        case .bookmark where proposals.isEmpty && !status.values.contains(false):
+            ContentUnavailableView(
+                "No bookmarks yet",
+                systemImage: "bookmark",
+                description: Text("Bookmark proposals you care about to see them here.")
+            )
+        default:
+            EmptyView()
         }
     }
 }
