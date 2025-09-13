@@ -1,6 +1,4 @@
-import EvolutionModel
 import EvolutionUI
-import SwiftData
 import SwiftUI
 
 // MARK: - AppScene
@@ -8,9 +6,7 @@ import SwiftUI
 /// Root scene for the application that wires up model containers and commands.
 @MainActor
 public struct AppScene {
-    @State private var modelContainer = try! ModelContainer(
-        for: Bookmark.self, Markdown.self, Proposal.self
-    )
+    @State private var modelContainer = EnvironmentResolver.modelContainer()
 
     /// Creates the scene with the provided root content view.
     public init() { }
@@ -22,8 +18,8 @@ extension AppScene: Scene {
     /// Body of the SwiftUI scene that hosts the app's content and commands.
     public var body: some Scene {
         WindowGroup {
-            ContentView(modelContainer: modelContainer)
-                .modelContainer(modelContainer)
+            ContentRootView()
+                .modifier(EnvironmentResolver(modelContainer))
         }
         .commands {
             FilterCommands()
@@ -39,7 +35,6 @@ extension AppScene: Scene {
 // MARK: - Preview
 
 #Preview(traits: .evolution) {
-    @Previewable @Environment(\.modelContext) var context
-    ContentView(modelContainer: context.container)
+    ContentRootView()
         .environment(\.colorScheme, .dark)
 }

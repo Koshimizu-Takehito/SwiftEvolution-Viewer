@@ -14,7 +14,6 @@ struct App: SwiftUI.App {
 // MARK: - Preview
 
 #Preview(traits: .evolution) {
-    @Previewable @Environment(\.modelContext) var context
-    ContentView(modelContainer: context.container)
+    ContentRootView()
         .environment(\.colorScheme, .dark)
 }

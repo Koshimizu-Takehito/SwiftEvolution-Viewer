@@ -13,26 +13,21 @@ struct ProposalListView {
 
     @Binding
     var selection: Proposal.Snapshot?
+    private let status: [Proposal.Status.State: Bool]
+    private let mode: ProposalListMode
 
-    @Binding
-    var isBookmarked: Bool
-
-    @Query(filter: .filter(status, isBookmarked), sort: \.proposalID, order: .reverse)
+    @Query(filter: .predicate(mode, status), sort: \.proposalID, order: .reverse)
     private var proposals: [Proposal]
-
-    private var hasBookmark: Bool {
-        proposals.contains { $0.bookmark != nil }
-    }
 }
 
 extension ProposalListView {
+    @TaskLocal private static var mode: ProposalListMode = .all
     @TaskLocal private static var status: [Proposal.Status.State: Bool] = [:]
-    @TaskLocal private static var isBookmarked: Bool = false
 
-    init(_ selection: Binding<Proposal.Snapshot?>, isBookmarked: Binding<Bool>, status: [Proposal.Status.State: Bool]) {
+    init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [Proposal.Status.State: Bool]) {
         self = Self.$status.withValue(status) {
-            Self.$isBookmarked.withValue(isBookmarked.wrappedValue) {
-                Self.init(selection: selection, isBookmarked: isBookmarked)
+            Self.$mode.withValue(mode) {
+                Self.init(selection: selection, status: status, mode: mode)
             }
         }
     }
@@ -47,9 +42,12 @@ extension ProposalListView: View {
                 }
             }
         }
+        .overlay {
+            emptyView
+        }
         .animation(.default, value: proposals)
         .tint(.darkText.opacity(0.2))
-        .navigationTitle("Swift Evolution")
+        .navigationTitle(navigationTitle)
         .onAppear(perform: selectFirstItem)
         .toolbar { toolbar }
     }
@@ -70,24 +68,44 @@ extension ProposalListView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        if hasBookmark {
-            ToolbarItem {
-                BookmarkButton(isBookmarked: $isBookmarked)
+        ToolbarItem {
+            switch mode {
+            case .all, .bookmark:
+                ProposalStatusPicker()
                     .tint(.darkText)
+            case .search:
+                EmptyView()
             }
         }
-        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
-            ToolbarSpacer()
+    }
+
+    private var navigationTitle: LocalizedStringResource {
+        switch mode {
+        case .all:
+            "Swift Evolution"
+        case .bookmark:
+            "Bookmark"
+        case .search:
+            "Search"
         }
-        ToolbarItem {
-            ProposalStatusPicker()
-                .tint(.darkText)
+    }
+
+    @ViewBuilder
+    private var emptyView: some View {
+        switch mode {
+        case .bookmark where proposals.isEmpty && !status.values.contains(false):
+            ContentUnavailableView(
+                "No bookmarks yet",
+                systemImage: "bookmark",
+                description: Text("Bookmark proposals you care about to see them here.")
+            )
+        default:
+            EmptyView()
         }
     }
 }
 
 #Preview(traits: .evolution) {
-    @Previewable @Environment(\.modelContext) var context
-    ContentView(modelContainer: context.container)
+    ContentRootView()
         .environment(\.colorScheme, .dark)
 }

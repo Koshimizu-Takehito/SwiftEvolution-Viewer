@@ -12,7 +12,7 @@ final class ContentViewModel {
     private let markdownRepository: MarkdownRepository
 
     /// All loaded proposals from storage.
-    private(set) var proposals: [Proposal.Snapshot] = [] {
+    private var proposals: [Proposal.Snapshot] = [] {
         didSet {
             Task { [self] in
                 await fetchMarkdowns()
