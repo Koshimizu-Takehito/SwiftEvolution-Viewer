@@ -14,6 +14,12 @@ extension Predicate<Proposal> {
             return #Predicate { proposal in
                 states.contains(proposal.status.state) && (proposal.bookmark != nil)
             }
+        case .search(let text):
+            return text.isEmpty ? Predicate<Proposal>.true : #Predicate { proposal in
+                proposal.title.contains(text) ||
+                proposal.proposalID.contains(text) ||
+                proposal.status.state.contains(text)
+            }
         }
     }
 }

@@ -14,6 +14,8 @@ struct ProposalListView {
     @Binding
     var selection: Proposal.Snapshot?
 
+    private let mode: ProposalListMode
+
     @Query(filter: .predicate(mode, status), sort: \.proposalID, order: .reverse)
     private var proposals: [Proposal]
 
@@ -29,7 +31,7 @@ extension ProposalListView {
     init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [Proposal.Status.State: Bool]) {
         self = Self.$status.withValue(status) {
             Self.$mode.withValue(mode) {
-                Self.init(selection: selection)
+                Self.init(selection: selection, mode: mode)
             }
         }
     }
@@ -46,7 +48,7 @@ extension ProposalListView: View {
         }
         .animation(.default, value: proposals)
         .tint(.darkText.opacity(0.2))
-        .navigationTitle("Swift Evolution")
+        .navigationTitle(navigationTitle)
         .onAppear(perform: selectFirstItem)
         .toolbar { toolbar }
     }
@@ -68,8 +70,24 @@ extension ProposalListView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItem {
-            ProposalStatusPicker()
-                .tint(.darkText)
+            switch mode {
+            case .all, .bookmark:
+                ProposalStatusPicker()
+                    .tint(.darkText)
+            case .search:
+                EmptyView()
+            }
+        }
+    }
+
+    private var navigationTitle: LocalizedStringResource {
+        switch mode {
+        case .all:
+            "Proposal"
+        case .bookmark:
+            "Bookmark"
+        case .search:
+            "Search"
         }
     }
 }

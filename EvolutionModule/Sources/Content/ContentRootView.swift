@@ -9,6 +9,8 @@ public struct ContentRootView: View {
     /// Trigger used to re-fetch proposal data.
     @State private var refresh: UUID?
 
+    @State private var searchText = ""
+
     public init () {}
 
     public var body: some View {
@@ -18,6 +20,10 @@ public struct ContentRootView: View {
             }
             Tab("Bookmark", systemImage: "bookmark") {
                 ContentView(mode: .bookmark)
+            }
+            Tab(role: .search) {
+                ContentView(mode: .search(searchText))
+                    .searchable(text: $searchText)
             }
         }
         .overlay {
