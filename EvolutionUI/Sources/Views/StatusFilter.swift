@@ -21,9 +21,9 @@ public struct StatusFilter: DynamicProperty {
 
     public init() {}
 
-    public var wrappedValue: [Proposal.Status.State: Bool] {
+    public var wrappedValue: [ReviewState: Bool] {
         get {
-            var values = [Proposal.Status.State: Bool]()
+            var values = [ReviewState: Bool]()
             values[.accepted] = accepted
             values[.activeReview] = activeReview
             values[.implemented] = implemented
@@ -45,7 +45,7 @@ public struct StatusFilter: DynamicProperty {
     }
 
     /// Provides bindings to individual status flags.
-    public var projectedValue: (_ status: Proposal.Status.State) -> (Binding<Bool>) {
+    public var projectedValue: (_ status: ReviewState) -> (Binding<Bool>) {
         return { status in
             switch status {
             case .accepted:
@@ -62,6 +62,8 @@ public struct StatusFilter: DynamicProperty {
                 $returnedForRevision
             case .withdrawn:
                 $withdrawn
+            case .unknown:
+                .constant(false)
             }
         }
     }

@@ -17,21 +17,26 @@ public final class Proposal {
     /// URL path to the proposal's markdown file on GitHub.
     public private(set) var link: String
 
-    /// The current review status details.
-    public private(set) var status: Status
-
     /// Human-readable proposal title.
     public private(set) var title: String
+
+    // MARK: Relationship
 
     /// Reference to any bookmark associated with this proposal.
     @Relationship(deleteRule: .cascade, inverse: \Bookmark.proposal)
     public var bookmark: Bookmark?
 
+    /// The current review status details.
+    @Relationship(deleteRule: .cascade)
+    public private(set) var status: Status
+
+    // MARK: init
+
     /// Creates a managed proposal instance from a snapshot.
     public required init(snapshot: Snapshot) {
         self.proposalID = snapshot.id
         self.link = snapshot.link
-        self.status = snapshot.status
+        self.status = Proposal.Status(snapshot.status)
         self.title = snapshot.title.trimmingCharacters(in: .whitespaces)
     }
 
@@ -42,52 +47,55 @@ public final class Proposal {
             return self
         }
         self.link = snapshot.link
-        self.status = snapshot.status
+        self.status = .init(snapshot.status)
         self.title = snapshot.title.trimmingCharacters(in: .whitespaces)
         return self
     }
 }
 
-// MARK: - Snapshot
+// MARK: - Relationship
 
 extension Proposal {
-    /// Immutable view of a ``Proposal`` used for value semantics.
-    public struct Snapshot: Hashable, Codable, Sendable {
-        /// Identifier of the persisted model, if any.
-        public var persistentModelID: PersistentIdentifier?
+    /// Metadata describing the review lifecycle of a proposal.
+    @Model
+    public final class Status {
+        /// Raw state string such as "activeReview" or "accepted".
+        @Relationship(deleteRule: .cascade)
+        public private(set) var state: State
+        /// Version of Swift in which the change shipped, if any.
+        public private(set) var version: String?
+        /// The end date for the proposal's review period.
+        public private(set) var end: String?
+        /// The start date for the proposal's review period.
+        public private(set) var start: String?
 
-        /// Unique proposal identifier such as "SE-0001".
-        public var id: String
-
-        /// Path to the proposal's markdown on GitHub.
-        public var link: String
-
-        /// Current review status.
-        public var status: Status
-
-        /// Proposal title.
-        public var title: String
-
-        /// Creates a snapshot from a managed ``Proposal`` instance.
-        public init(object: Proposal) {
-            persistentModelID = object.persistentModelID
-            id = object.proposalID
-            link = object.link
-            status = object.status
-            title = object.title.trimmingCharacters(in: .whitespaces)
+        /// Creates a new status description.
+        public init(state: String, version: String? = nil, end: String? = nil, start: String? = nil) {
+            self.state = State(rawValue: state)
+            self.version = version
+            self.end = end
+            self.start = start
         }
 
-        /// Creates a snapshot with the provided values.
-        public init(
-            id: String,
-            link: String,
-            status: Proposal.Status,
-            title: String
-        ) {
-            self.id = id
-            self.link = link
-            self.status = status
-            self.title = title
+        public init(_ status: Proposal.Snapshot.Status) {
+            self.state = State(rawValue: status.state)
+            self.version = status.version
+            self.end = status.end
+            self.start = status.start
+        }
+    }
+
+    @Model
+    public final class State {
+        public private(set) var rawValue: String
+        public private(set) var title: String
+        public private(set) var order: Int
+
+        public init(rawValue: String) {
+            let state = ReviewState(rawValue: rawValue) ?? .unknown
+            self.rawValue = rawValue
+            self.order = state.order
+            self.title = state.description
         }
     }
 }
