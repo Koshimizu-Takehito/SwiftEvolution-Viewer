@@ -46,8 +46,8 @@ struct ProposalListCell: View {
 
     /// Text and color pair representing the proposal's status.
     private var label: (text: String, color: Color) {
-        let state = Proposal.Status.State(proposal: proposal)
-        return (state.label, state.color)
+        let state = ReviewState(proposal: proposal)
+        return (String(describing: state), state.color)
     }
 
     /// Combined identifier and title string.

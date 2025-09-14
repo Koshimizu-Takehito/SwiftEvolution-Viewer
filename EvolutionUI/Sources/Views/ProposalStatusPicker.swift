@@ -33,7 +33,7 @@ public struct ProposalStatusPicker: View {
                 HStack {
                     Spacer()
                     Button("Select All") {
-                        let allCases = Proposal.Status.State.allCases
+                        let allCases = ReviewState.allCases
                         filter = .init(uniqueKeysWithValues: allCases.map { ($0, true) })
                     }
                     .disabled(filter.values.allSatisfy(\.self))

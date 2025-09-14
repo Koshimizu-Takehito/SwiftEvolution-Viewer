@@ -13,18 +13,21 @@ struct ProposalListView {
 
     @Binding
     var selection: Proposal.Snapshot?
-    private let status: [Proposal.Status.State: Bool]
+    private let status: [ReviewState: Bool]
     private let mode: ProposalListMode
 
-    @Query(filter: .predicate(mode, status), sort: \.proposalID, order: .reverse)
+    @Query(
+        filter: .predicate(mode, status),
+        sort: [SortDescriptor(\.proposalID, order: .reverse)]
+    )
     private var proposals: [Proposal]
 }
 
 extension ProposalListView {
     @TaskLocal private static var mode: ProposalListMode = .all
-    @TaskLocal private static var status: [Proposal.Status.State: Bool] = [:]
+    @TaskLocal private static var status: [ReviewState: Bool] = [:]
 
-    init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [Proposal.Status.State: Bool]) {
+    init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [ReviewState: Bool]) {
         self = Self.$status.withValue(status) {
             Self.$mode.withValue(mode) {
                 Self.init(selection: selection, status: status, mode: mode)

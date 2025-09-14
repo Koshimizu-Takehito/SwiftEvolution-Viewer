@@ -42,7 +42,7 @@ struct ContentDetailView: View {
 
     /// Determines the accent color based on the proposal's status.
     func accentColor(_ proposal: Proposal.Snapshot) -> Color {
-        Proposal.Status.State(proposal: proposal)?.color ?? .darkText
+        ReviewState(proposal: proposal).color
     }
 }
 

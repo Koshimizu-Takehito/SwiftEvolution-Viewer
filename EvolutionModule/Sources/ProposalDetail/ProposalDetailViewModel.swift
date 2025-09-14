@@ -33,8 +33,8 @@ final class ProposalDetailViewModel: Observable {
     }
 
     /// Tint color based on the proposal's status.
-    var tint: Color? {
-        Proposal.Status.State(proposal: proposal)?.color
+    var tint: Color {
+        ReviewState(proposal: proposal).color
     }
 
     /// Bookmark state for the proposal.

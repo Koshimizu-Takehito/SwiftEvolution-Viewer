@@ -16,7 +16,7 @@ extension FilterCommands: Commands {
             Divider()
             Menu("Review Status") {
                 ForEach(0..<3, id: \.self) { index in
-                    let option = Proposal.Status.State.allCases[index]
+                    let option = ReviewState.allCases[index]
                     Toggle(option.description, isOn: $filter(option))
                     Toggle(option.description, isOn: .constant(false))
                         .keyboardShortcut(.init(Character("\(index + 1)")), modifiers: [.command])
@@ -25,7 +25,7 @@ extension FilterCommands: Commands {
                 Divider()
 
                 Button("Select All") {
-                    let allCases = Proposal.Status.State.allCases
+                    let allCases = ReviewState.allCases
                     filter = .init(uniqueKeysWithValues: allCases.map { ($0, true) })
                 }
                 .disabled(filter.values.allSatisfy(\.self))

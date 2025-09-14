@@ -5,7 +5,7 @@ import SwiftUI
 struct EnvironmentResolver: ViewModifier {
     static func modelContainer(isStoredInMemoryOnly: Bool = false) -> ModelContainer {
         try! ModelContainer(
-            for: Bookmark.self, Markdown.self, Proposal.self,
+            for: Proposal.self, Proposal.Status.self, Proposal.State.self, Bookmark.self, Markdown.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)
         )
     }
