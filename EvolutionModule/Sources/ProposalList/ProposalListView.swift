@@ -8,26 +8,25 @@ import SwiftUI
 /// Displays a list of proposals and manages selection state.
 @MainActor
 struct ProposalListView {
+    @Query(filter: .predicate(mode, status), sort: sortKey.descriptors) private var proposals: [Proposal]
     @Environment(\.horizontalSizeClass) private var horizontal
     @Binding var selection: Proposal.Snapshot?
+    @Binding var sortKey: ProposalSortKey
     private let status: [ReviewState: Bool]
     private let mode: ProposalListMode
-
-    @Query(
-        filter: .predicate(mode, status),
-        sort: [SortDescriptor(\.proposalID, order: .reverse)]
-    )
-    private var proposals: [Proposal]
 }
 
 extension ProposalListView {
     @TaskLocal private static var mode: ProposalListMode = .all
     @TaskLocal private static var status: [ReviewState: Bool] = [:]
+    @TaskLocal private static var sortKey: ProposalSortKey = .proposalID
 
-    init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [ReviewState: Bool]) {
+    init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [ReviewState: Bool], sortKey: Binding<ProposalSortKey>) {
         self = Self.$status.withValue(status) {
             Self.$mode.withValue(mode) {
-                Self.init(selection: selection, status: status, mode: mode)
+                Self.$sortKey.withValue(sortKey.wrappedValue) {
+                    Self.init(selection: selection, sortKey: sortKey, status: status, mode: mode)
+                }
             }
         }
     }
@@ -68,14 +67,26 @@ extension ProposalListView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        ToolbarItem {
-            switch mode {
-            case .all, .bookmark:
+        switch mode {
+        case .all, .bookmark:
+            ToolbarItem {
+                Menu("Sort", systemImage: "arrow.trianglehead.swap") {
+                    Picker(selection: $sortKey) {
+                        ForEach(ProposalSortKey.allCases) { sortKey in
+                            Text(String(describing: sortKey))
+                                .tag(sortKey)
+                        }
+                    } label: {
+                        Text(String(describing: sortKey))
+                    }
+                }
+            }
+            ToolbarItem {
                 ProposalStatusPicker()
                     .tint(.darkText)
-            case .search:
-                EmptyView()
             }
+        case .search:
+            ToolbarItem {}
         }
     }
 

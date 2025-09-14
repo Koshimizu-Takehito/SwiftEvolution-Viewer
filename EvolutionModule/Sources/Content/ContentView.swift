@@ -24,6 +24,8 @@ public struct ContentView {
     /// Currently selected status filter.
     @StatusFilter private var filter
 
+    @SceneStorage private var sortKey: ProposalSortKey = .proposalID
+
     /// Proposal currently selected in the list view.
     @State private var selection: Proposal.Snapshot?
 
@@ -40,7 +42,7 @@ extension ContentView: View {
             switch horizontalSizeClass {
             case .compact:
                 NavigationStack(path: $navigationPath) {
-                    ProposalListView($selection, mode: mode, status: filter)
+                    ProposalListView($selection, mode: mode, status: filter, sortKey: $sortKey)
                         .navigationDestination(for: Proposal.Snapshot.self) { proposal in
                             // Destination
                             detail(proposal: proposal)
@@ -56,7 +58,7 @@ extension ContentView: View {
             default:
                 NavigationSplitView {
                     // List view
-                    ProposalListView($selection, mode: mode, status: filter)
+                    ProposalListView($selection, mode: mode, status: filter, sortKey: $sortKey)
                         .environment(\.horizontalSizeClass, horizontalSizeClass)
                 } detail: {
                     // Detail view
