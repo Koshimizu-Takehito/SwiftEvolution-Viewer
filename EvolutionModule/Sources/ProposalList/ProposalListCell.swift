@@ -15,19 +15,25 @@ struct ProposalListCell: View {
             let label = label
             HStack {
                 // Status label
-                Text(label.text)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .overlay {
-                        if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
-                            ConcentricRectangle(corners: .fixed(8))
-                                .stroke()
-                        } else {
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke()
-                        }
+                HStack {
+                    Text(label.text)
+                    if let version = proposal.status.version.rawValue, !version.isEmpty {
+                        Text(version)
                     }
-                    .foregroundStyle(label.color)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .overlay {
+                    if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+                        ConcentricRectangle(corners: .fixed(8))
+                            .stroke()
+                    } else {
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke()
+                    }
+                }
+                .foregroundStyle(label.color)
+
                 // Bookmark indicator
                 Image(systemName: "bookmark.fill")
                     .foregroundStyle(label.color)

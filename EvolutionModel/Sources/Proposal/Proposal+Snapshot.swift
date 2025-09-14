@@ -63,7 +63,7 @@ extension Proposal.Snapshot {
 
         public init(_ status: Proposal.Status) {
             self.state = status.state.rawValue
-            self.version = status.version
+            self.version = status.version.rawValue
             self.end = status.end
             self.start = status.start
         }

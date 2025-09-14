@@ -63,7 +63,8 @@ extension Proposal {
         @Relationship(deleteRule: .cascade)
         public private(set) var state: State
         /// Version of Swift in which the change shipped, if any.
-        public private(set) var version: String?
+        @Relationship(deleteRule: .cascade)
+        public private(set) var version: Version
         /// The end date for the proposal's review period.
         public private(set) var end: String?
         /// The start date for the proposal's review period.
@@ -72,14 +73,14 @@ extension Proposal {
         /// Creates a new status description.
         public init(state: String, version: String? = nil, end: String? = nil, start: String? = nil) {
             self.state = State(rawValue: state)
-            self.version = version
+            self.version = Version(rawValue: version)
             self.end = end
             self.start = start
         }
 
         public init(_ status: Proposal.Snapshot.Status) {
             self.state = State(rawValue: status.state)
-            self.version = status.version
+            self.version = Version(rawValue: status.version)
             self.end = status.end
             self.start = status.start
         }
@@ -96,6 +97,32 @@ extension Proposal {
             self.rawValue = rawValue
             self.order = state.order
             self.title = state.description
+        }
+    }
+
+    @Model
+    public final class Version {
+        public private(set) var rawValue: String?
+        public private(set) var code: Int64
+
+        public init(rawValue: String?) {
+            self.rawValue = rawValue
+            self.code = Version.makeCode(rawValue)
+        }
+
+        private static func makeCode(_ value: String?) -> Int64 {
+            let value = value?.trimmingCharacters(in: .whitespaces)
+            guard let value, !value.isEmpty else {
+                return 0
+            }
+            var numbers = value.split(separator: ".").map(String.init).compactMap(Int.init).reversed().map(\.self)
+            if numbers.isEmpty {
+                return Int64.max
+            }
+            let major = numbers.popLast() ?? 0
+            let minor = numbers.popLast() ?? 0
+            let patch = numbers.popLast() ?? 0
+            return (Int64(major) << 32) | (Int64(minor) << 16) | Int64(patch)
         }
     }
 }
