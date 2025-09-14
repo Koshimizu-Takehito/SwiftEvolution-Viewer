@@ -8,12 +8,16 @@ import SwiftUI
 /// Main entry view that displays the list of proposals and their details.
 @MainActor
 public struct ContentView {
+    /// Navigation path for presenting nested proposal details.
+    @State private var detailPath = NavigationPath()
+
     @Environment(\.horizontalSizeClass) private var horizontal
 
-    @Environment(ContentViewModel.self) private var viewModel
+    /// Model context used to load additional data.
+    @Environment(\.modelContext) private var context
 
-    /// Current tint color of the navigation bar.
-    @State private var tint: Color?
+    /// ViewModel
+    @Environment(ContentViewModel.self) private var viewModel
 
     private var mode: ProposalListMode
 
@@ -21,29 +25,7 @@ public struct ContentView {
     @StatusFilter private var filter
 
     /// Proposal currently selected in the list view.
-    @State private var proposal: Proposal.Snapshot?
-
-    /// Tint color applied to the detail view's navigation elements on compact
-    /// devices. On larger screens a constant value is used instead.
-    private var detailTint: Binding<Color?> {
-        switch horizontal {
-        case .compact:
-            return $tint
-        default:
-            return .constant(nil)
-        }
-    }
-
-    /// Tint applied to the navigation bar. Falls back to the system dark text
-    /// color when no custom tint is active.
-    private var barTint: Color? {
-        switch horizontal {
-        case .compact:
-            return tint ?? .darkText
-        default:
-            return .darkText
-        }
-    }
+    @State private var selection: Proposal.Snapshot?
 
     public init(mode: ProposalListMode = .all) {
         self.mode = mode
@@ -57,17 +39,19 @@ extension ContentView: View {
         ZStack(alignment: .bottom) {
             NavigationSplitView {
                 // List view
-                ProposalListView($proposal, mode: mode, status: filter)
+                ProposalListView($selection, mode: mode, status: filter)
                     .environment(\.horizontalSizeClass, horizontal)
             } detail: {
                 // Detail view
-                if let proposal {
-                    ContentDetailView(
-                        proposal: proposal,
-                        horizontal: horizontal,
-                        accentColor: detailTint
-                    )
-                    .id(proposal.id)
+                if let selection {
+                    NavigationStack(path: $detailPath) {
+                        // Root
+                        detail(proposal: selection)
+                    }
+                    .navigationDestination(for: Proposal.Snapshot.self) { proposal in
+                        // Destination
+                        detail(proposal: proposal)
+                    }
                 }
             }
             if let progress = viewModel.downloadProgress {
@@ -75,7 +59,12 @@ extension ContentView: View {
                     .frame(maxWidth: 375)
             }
         }
-        .tint(barTint)
+        .tint(.darkText)
+    }
+
+    /// Builds the actual detail view for a proposal.
+    func detail(proposal: Proposal.Snapshot) -> some View {
+        ProposalDetailView(path: $detailPath, proposal: proposal, modelContainer: context.container)
     }
 }
 

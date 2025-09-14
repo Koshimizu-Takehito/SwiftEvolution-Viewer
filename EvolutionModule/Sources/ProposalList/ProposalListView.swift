@@ -8,11 +8,8 @@ import SwiftUI
 /// Displays a list of proposals and manages selection state.
 @MainActor
 struct ProposalListView {
-    @Environment(\.horizontalSizeClass)
-    private var horizontal
-
-    @Binding
-    var selection: Proposal.Snapshot?
+    @Environment(\.horizontalSizeClass) private var horizontal
+    @Binding var selection: Proposal.Snapshot?
     private let status: [ReviewState: Bool]
     private let mode: ProposalListMode
 
