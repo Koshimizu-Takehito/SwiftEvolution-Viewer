@@ -29,15 +29,11 @@ struct ProposalDetailView {
 
     /// Action used to open URLs from markdown links.
     @Environment(\.openURL) private var openURL
+}
 
+extension ProposalDetailView {
     init(path: Binding<NavigationPath>, proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
-        _path = path
-        _viewModel = State(
-            wrappedValue: ProposalDetailViewModel(
-                proposal: proposal,
-                modelContainer: modelContainer
-            )
-        )
+        self.init(path: path, viewModel: ProposalDetailViewModel(proposal: proposal, modelContainer: modelContainer))
     }
 }
 
