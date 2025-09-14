@@ -11,7 +11,7 @@ public struct ContentView {
     /// Navigation path for presenting nested proposal details.
     @State private var detailPath = NavigationPath()
 
-    @Environment(\.horizontalSizeClass) private var horizontal
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     /// Model context used to load additional data.
     @Environment(\.modelContext) private var context
@@ -37,20 +37,38 @@ public struct ContentView {
 extension ContentView: View {
     public var body: some View {
         ZStack(alignment: .bottom) {
-            NavigationSplitView {
-                // List view
-                ProposalListView($selection, mode: mode, status: filter)
-                    .environment(\.horizontalSizeClass, horizontal)
-            } detail: {
-                // Detail view
-                if let selection {
-                    NavigationStack(path: $detailPath) {
-                        // Root
-                        detail(proposal: selection)
-                    }
-                    .navigationDestination(for: Proposal.Snapshot.self) { proposal in
-                        // Destination
-                        detail(proposal: proposal)
+            switch horizontalSizeClass {
+            case .compact:
+                NavigationStack(path: $detailPath) {
+                    ProposalListView($selection, mode: mode, status: filter)
+                        .navigationDestination(for: Proposal.Snapshot.self) { proposal in
+                            // Destination
+                            detail(proposal: proposal)
+                        }
+                        .onChange(of: selection) { _, selection in
+                            if let selection {
+                                detailPath.append(selection)
+                            } else {
+                                detailPath.removeLast()
+                            }
+                        }
+                }
+            default:
+                NavigationSplitView {
+                    // List view
+                    ProposalListView($selection, mode: mode, status: filter)
+                        .environment(\.horizontalSizeClass, horizontalSizeClass)
+                } detail: {
+                    // Detail view
+                    if let selection {
+                        NavigationStack(path: $detailPath) {
+                            detail(proposal: selection)
+                        }
+                        .navigationDestination(for: Proposal.Snapshot.self) { proposal in
+                            // Destination
+                            detail(proposal: proposal)
+                        }
+                        .id(selection.id)
                     }
                 }
             }
