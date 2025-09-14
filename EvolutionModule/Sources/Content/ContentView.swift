@@ -9,7 +9,7 @@ import SwiftUI
 @MainActor
 public struct ContentView {
     /// Navigation path for presenting nested proposal details.
-    @State private var detailPath = NavigationPath()
+    @State private var navigationPath = NavigationPath()
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -39,7 +39,7 @@ extension ContentView: View {
         ZStack(alignment: .bottom) {
             switch horizontalSizeClass {
             case .compact:
-                NavigationStack(path: $detailPath) {
+                NavigationStack(path: $navigationPath) {
                     ProposalListView($selection, mode: mode, status: filter)
                         .navigationDestination(for: Proposal.Snapshot.self) { proposal in
                             // Destination
@@ -47,9 +47,9 @@ extension ContentView: View {
                         }
                         .onChange(of: selection) { _, selection in
                             if let selection {
-                                detailPath.append(selection)
+                                navigationPath.append(selection)
                             } else {
-                                detailPath.removeLast()
+                                navigationPath.removeLast()
                             }
                         }
                 }
@@ -61,7 +61,7 @@ extension ContentView: View {
                 } detail: {
                     // Detail view
                     if let selection {
-                        NavigationStack(path: $detailPath) {
+                        NavigationStack(path: $navigationPath) {
                             detail(proposal: selection)
                         }
                         .navigationDestination(for: Proposal.Snapshot.self) { proposal in
@@ -82,7 +82,7 @@ extension ContentView: View {
 
     /// Builds the actual detail view for a proposal.
     func detail(proposal: Proposal.Snapshot) -> some View {
-        ProposalDetailView(path: $detailPath, proposal: proposal, modelContainer: context.container)
+        ProposalDetailView($navigationPath, proposal: proposal, modelContainer: context.container)
     }
 }
 

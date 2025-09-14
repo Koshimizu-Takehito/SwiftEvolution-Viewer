@@ -32,7 +32,7 @@ struct ProposalDetailView {
 }
 
 extension ProposalDetailView {
-    init(path: Binding<NavigationPath>, proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
+    init(_ path: Binding<NavigationPath>, proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
         self.init(path: path, viewModel: ProposalDetailViewModel(proposal: proposal, modelContainer: modelContainer))
     }
 }
