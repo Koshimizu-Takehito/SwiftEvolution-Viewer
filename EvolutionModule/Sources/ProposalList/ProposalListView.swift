@@ -14,9 +14,9 @@ struct ProposalListView {
     var query: ProposalQuery
 
     init(_ selection: Binding<Proposal.Snapshot?>, query: ProposalQuery) {
-        self.query = query
         _selection = selection
-        _proposals = query.value
+        _proposals = Query(query)
+        self.query = query
     }
 }
 

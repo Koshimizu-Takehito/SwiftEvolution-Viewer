@@ -13,12 +13,10 @@ struct ProposalQuery: DynamicProperty {
     @SceneStorage var sortKey: ProposalSortKey = .proposalID
 
     var mode: ProposalListMode = .all
+}
 
-    var value: Query<Proposal, [Proposal]> {
-        Query(filter: filter, sort: sort)
-    }
-
-    private var filter: Predicate<Proposal> {
+private extension ProposalQuery {
+    var filter: Predicate<Proposal> {
         let states = Set(reviewStates.lazy.filter(\.value).map(\.key.rawValue))
         /// Predicate limiting results to the selected states and optional bookmark filter.
         switch mode {
@@ -39,7 +37,7 @@ struct ProposalQuery: DynamicProperty {
         }
     }
 
-    private var sort: [SortDescriptor<Proposal>] {
+    var sort: [SortDescriptor<Proposal>] {
         switch sortKey {
         case .proposalID:
             return [SortDescriptor(\.proposalID, order: .reverse)]
@@ -50,5 +48,11 @@ struct ProposalQuery: DynamicProperty {
                 SortDescriptor(\.proposalID, order: .reverse)
             ]
         }
+    }
+}
+
+extension Query<Proposal, [Proposal]> {
+    init(_ query: ProposalQuery) {
+        self = Query(filter: query.filter, sort: query.sort)
     }
 }
