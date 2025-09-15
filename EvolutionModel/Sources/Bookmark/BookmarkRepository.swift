@@ -8,7 +8,7 @@ import SwiftData
 /// All methods run on the actor's isolated model container to ensure safe
 /// access from concurrent contexts.
 @ModelActor
-public actor BookmarkRepository {
+public actor BookmarkRepository: Observable {
     /// Returns all stored bookmarks as immutable snapshots.
     public func snapshots() -> [Bookmark.Snapshot] {
         let result = try? modelContext.fetch(FetchDescriptor<Bookmark>(predicate: .true))

@@ -27,6 +27,7 @@ extension ProposalListView: View {
                 NavigationLink(value: Proposal.Snapshot(object: proposal)) {
                     ProposalListCell(proposal: proposal)
                 }
+                .contextMenu { BookmarkMenu(proposal: proposal) }
             }
         }
         .overlay {
