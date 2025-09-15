@@ -19,8 +19,6 @@ public struct ContentView {
     /// ViewModel
     @Environment(ContentViewModel.self) private var viewModel
 
-    private var mode: ProposalListMode
-
     /// Currently selected status filter.
     @StatusFilter private var filter
 
@@ -29,8 +27,10 @@ public struct ContentView {
     /// Proposal currently selected in the list view.
     @State private var selection: Proposal.Snapshot?
 
+    var query: ProposalQuery
+
     public init(mode: ProposalListMode = .all) {
-        self.mode = mode
+        query = ProposalQuery(mode: mode)
     }
 }
 
@@ -42,7 +42,7 @@ extension ContentView: View {
             switch horizontalSizeClass {
             case .compact:
                 NavigationStack(path: $navigationPath) {
-                    ProposalListView($selection, mode: mode, status: filter, sortKey: $sortKey)
+                    ProposalListView($selection, query: query)
                         .navigationDestination(for: Proposal.Snapshot.self) { proposal in
                             // Destination
                             detail(proposal: proposal)
@@ -58,7 +58,7 @@ extension ContentView: View {
             default:
                 NavigationSplitView {
                     // List view
-                    ProposalListView($selection, mode: mode, status: filter, sortKey: $sortKey)
+                    ProposalListView($selection, query: query)
                         .environment(\.horizontalSizeClass, horizontalSizeClass)
                 } detail: {
                     // Detail view
