@@ -20,5 +20,6 @@ struct EnvironmentResolver: ViewModifier {
         content
             .modelContainer(modelContainer)
             .environment(ContentViewModel(modelContainer: modelContainer))
+            .environment(BookmarkRepository(modelContainer: modelContainer))
     }
 }
