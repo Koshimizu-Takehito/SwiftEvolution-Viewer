@@ -8,27 +8,15 @@ import SwiftUI
 /// Displays a list of proposals and manages selection state.
 @MainActor
 struct ProposalListView {
-    @Query(filter: .predicate(mode, status), sort: sortKey.descriptors) private var proposals: [Proposal]
     @Environment(\.horizontalSizeClass) private var horizontal
     @Binding var selection: Proposal.Snapshot?
-    @Binding var sortKey: ProposalSortKey
-    private let status: [ReviewState: Bool]
-    private let mode: ProposalListMode
-}
+    @Query private var proposals: [Proposal]
+    var query: ProposalQuery
 
-extension ProposalListView {
-    @TaskLocal private static var mode: ProposalListMode = .all
-    @TaskLocal private static var status: [ReviewState: Bool] = [:]
-    @TaskLocal private static var sortKey: ProposalSortKey = .proposalID
-
-    init(_ selection: Binding<Proposal.Snapshot?>, mode: ProposalListMode, status: [ReviewState: Bool], sortKey: Binding<ProposalSortKey>) {
-        self = Self.$status.withValue(status) {
-            Self.$mode.withValue(mode) {
-                Self.$sortKey.withValue(sortKey.wrappedValue) {
-                    Self.init(selection: selection, sortKey: sortKey, status: status, mode: mode)
-                }
-            }
-        }
+    init(_ selection: Binding<Proposal.Snapshot?>, query: ProposalQuery) {
+        self.query = query
+        _selection = selection
+        _proposals = query.value
     }
 }
 
@@ -67,17 +55,17 @@ extension ProposalListView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        switch mode {
-        case .all, .bookmark:
+        switch query.mode {
+        case .all:
             ToolbarItem {
                 Menu("Sort", systemImage: "arrow.trianglehead.swap") {
-                    Picker(selection: $sortKey) {
+                    Picker(selection: query.$sortKey) {
                         ForEach(ProposalSortKey.allCases) { sortKey in
                             Text(String(describing: sortKey))
                                 .tag(sortKey)
                         }
                     } label: {
-                        Text(String(describing: sortKey))
+                        Text(String(describing: query.sortKey))
                     }
                 }
             }
@@ -85,13 +73,13 @@ extension ProposalListView: View {
                 ProposalStatusPicker()
                     .tint(.darkText)
             }
-        case .search:
+        case .bookmark, .search:
             ToolbarItem {}
         }
     }
 
     private var navigationTitle: LocalizedStringResource {
-        switch mode {
+        switch query.mode {
         case .all:
             "Swift Evolution"
         case .bookmark:
@@ -103,10 +91,10 @@ extension ProposalListView: View {
 
     @ViewBuilder
     private var emptyView: some View {
-        switch mode {
-        case .bookmark where proposals.isEmpty && !status.values.contains(false):
+        switch query.mode {
+        case .bookmark where proposals.isEmpty:
             ContentUnavailableView(
-                "No bookmarks yet",
+                "No bookmarked proposals",
                 systemImage: "bookmark",
                 description: Text("Bookmark proposals you care about to see them here.")
             )
