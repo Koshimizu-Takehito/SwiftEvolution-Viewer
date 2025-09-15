@@ -50,9 +50,10 @@ extension ContentView: View {
                         .onChange(of: selection) { _, selection in
                             if let selection {
                                 navigationPath.append(selection)
-                            } else {
-                                navigationPath.removeLast()
                             }
+                        }
+                        .onAppear {
+                            selection = nil
                         }
                 }
             default:
