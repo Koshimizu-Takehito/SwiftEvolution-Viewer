@@ -34,3 +34,24 @@ public struct BookmarkMenu: View {
         }
     }
 }
+
+public struct OpenSafariButton: View {
+    @Environment(\.openURL) private var openURL
+
+    private let proposal: Proposal.Snapshot
+
+    public init(proposal: Proposal) {
+        self.proposal = Proposal.Snapshot(object: proposal)
+    }
+
+    public init(proposal: Proposal.Snapshot) {
+        self.proposal = proposal
+    }
+
+    public var body: some View {
+        Button("Open Safari", systemImage: "safari") {
+            openURL(GithubURL(link: proposal.link).rawValue)
+        }
+        .tint(ReviewState(proposal: proposal).color)
+    }
+}
