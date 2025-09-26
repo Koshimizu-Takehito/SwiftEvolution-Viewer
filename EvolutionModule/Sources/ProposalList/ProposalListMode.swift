@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 public enum ProposalListMode: Hashable, Sendable, RawRepresentable {
     case all

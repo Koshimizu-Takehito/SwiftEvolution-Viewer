@@ -24,12 +24,12 @@ public struct ContentView {
 
     @SceneStorage private var sortKey: ProposalSortKey = .proposalID
 
-    /// Proposal currently selected in the list view.
-    @State private var selection: Proposal.Snapshot?
-
     var query: ProposalQuery
 
+    @AppStorage private var selectedId: String?
+
     public init(mode: ProposalListMode = .all) {
+        self._selectedId = AppStorage("ContentView.\(mode).selectedId")
         query = ProposalQuery(mode: mode)
     }
 }
@@ -42,36 +42,35 @@ extension ContentView: View {
             switch horizontalSizeClass {
             case .compact:
                 NavigationStack(path: $navigationPath) {
-                    ProposalListView($selection, query: query)
-                        .navigationDestination(for: Proposal.Snapshot.self) { proposal in
+                    ProposalListView(query: query)
+                        .navigationDestination(for: String.self) { selectedId in
                             // Destination
-                            detail(proposal: proposal)
+                            detail(selectedId: selectedId)
                         }
-                        .onChange(of: selection) { _, selection in
-                            if let selection {
-                                navigationPath.append(selection)
+                        .onChange(of: selectedId, initial: true) { _, newValue in
+                            if let newValue {
+                                navigationPath.append(newValue)
+                                selectedId = nil
                             }
                         }
-                        .onAppear {
-                            selection = nil
-                        }
                 }
+
             default:
                 NavigationSplitView {
                     // List view
-                    ProposalListView($selection, query: query)
+                    ProposalListView($selectedId, query: query)
                         .environment(\.horizontalSizeClass, horizontalSizeClass)
                 } detail: {
                     // Detail view
-                    if let selection {
+                    if let selectedId {
                         NavigationStack(path: $navigationPath) {
-                            detail(proposal: selection)
+                            detail(selectedId: selectedId)
                         }
                         .navigationDestination(for: Proposal.Snapshot.self) { proposal in
                             // Destination
-                            detail(proposal: proposal)
+                            detail(selectedId: selectedId)
                         }
-                        .id(selection.id)
+                        .id(selectedId)
                     }
                 }
             }
@@ -84,8 +83,15 @@ extension ContentView: View {
     }
 
     /// Builds the actual detail view for a proposal.
-    func detail(proposal: Proposal.Snapshot) -> some View {
-        ProposalDetailView($navigationPath, proposal: proposal, modelContainer: context.container)
+    @ViewBuilder
+    func detail(selectedId: String) -> some View {
+        let proposal = try? context
+            .fetch(.id(selectedId))
+            .first
+            .flatMap(Proposal.Snapshot.init(object:))
+        if let proposal {
+            ProposalDetailView($navigationPath, proposal: proposal, modelContainer: context.container)
+        }
     }
 }
 

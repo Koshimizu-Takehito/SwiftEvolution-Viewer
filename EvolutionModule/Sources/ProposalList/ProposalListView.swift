@@ -9,12 +9,12 @@ import SwiftUI
 @MainActor
 struct ProposalListView {
     @Environment(\.horizontalSizeClass) private var horizontal
-    @Binding var selection: Proposal.Snapshot?
+    private var selectedId: Binding<String?>?
     @Query private var proposals: [Proposal]
     var query: ProposalQuery
 
-    init(_ selection: Binding<Proposal.Snapshot?>, query: ProposalQuery) {
-        _selection = selection
+    init(_ selectedId: Binding<String?>? = nil, query: ProposalQuery) {
+        self.selectedId = selectedId
         _proposals = Query(query)
         self.query = query
     }
@@ -22,15 +22,13 @@ struct ProposalListView {
 
 extension ProposalListView: View {
     var body: some View {
-        List(selection: $selection) {
-            ForEach(proposals) { proposal in
-                NavigationLink(value: Proposal.Snapshot(object: proposal)) {
-                    ProposalListCell(proposal: proposal)
-                }
-                .contextMenu {
-                    OpenSafariButton(proposal: proposal)
-                    BookmarkMenu(proposal: proposal)
-                }
+        List(proposals, selection: selectedId) { proposal in
+            NavigationLink(value: proposal.proposalID) {
+                ProposalListCell(proposal: proposal)
+            }
+            .contextMenu {
+                OpenSafariButton(proposal: proposal)
+                BookmarkMenu(proposal: proposal)
             }
         }
         .overlay {
@@ -46,13 +44,13 @@ extension ProposalListView: View {
     /// Selects the first proposal when running on larger displays.
     func selectFirstItem() {
         #if os(macOS)
-            if selection == nil, let proposal = proposals.first {
-                selection = .init(object: proposal)
+            if selectedId.wrappedValue == nil, let proposal = proposals.first {
+                selectedId.wrappedValue = proposal.proposalID
             }
         #elseif os(iOS)
             // Provide an initial selection when the split view is displayed side-by-side.
-            if horizontal == .regular, selection == nil, let proposal = proposals.first {
-                selection = .init(object: proposal)
+            if horizontal == .regular, selectedId?.wrappedValue == nil, let proposal = proposals.first {
+                selectedId?.wrappedValue = proposal.proposalID
             }
         #endif
     }
