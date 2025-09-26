@@ -16,7 +16,7 @@ final class ProposalDetailViewModel: Observable {
     private let proposalRepository: ProposalRepository
 
     /// The proposal being displayed.
-    private let proposal: Proposal.Snapshot
+    let proposal: Proposal.Snapshot
 
     /// Parsed markdown content for presentation.
     private(set) var items: [ProposalDetailRow] = []

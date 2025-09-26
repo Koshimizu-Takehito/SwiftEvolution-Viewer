@@ -29,7 +29,7 @@ struct MarkdownURL: RawRepresentable, Codable, Hashable, Sendable {
         var component = URLComponents()
         component.scheme = "https"
         component.host = "raw.githubusercontent.com"
-        component.path = "/apple/swift-evolution/main/proposals/\(link)"
+        component.path = "/swiftlang/swift-evolution/main/proposals/\(link)"
         self.rawValue = component.url!
     }
 }

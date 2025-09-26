@@ -63,7 +63,7 @@ extension ProposalDetailView: View {
             .environment(\.defaultMinListRowHeight, 1)
         }
         .toolbar {
-            NavigationBar(viewModel: viewModel)
+            ProposalDetailToolBar(viewModel: viewModel)
         }
         .overlay {
             ErrorView(error: viewModel.fetchError) {
