@@ -3,9 +3,14 @@ import SwiftUI
 
 // MARK: - App
 
-@main
 /// Entry point for the Swift Evolution sample application.
+@main
 struct App: SwiftUI.App {
+
+    init() {
+        AppShortcutsProvider.updateAppShortcutParameters()
+    }
+
     var body: some Scene {
         AppScene()
     }

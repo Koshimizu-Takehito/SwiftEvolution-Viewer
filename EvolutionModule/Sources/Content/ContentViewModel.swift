@@ -68,4 +68,8 @@ final class ContentViewModel {
         try await markdownRepository.fetch(with: proposal)
         downloadProgress?.current += 1
     }
+
+    func load(id: String) async -> Proposal.Snapshot? {
+        await proposalRepository.find(by: id)
+    }
 }

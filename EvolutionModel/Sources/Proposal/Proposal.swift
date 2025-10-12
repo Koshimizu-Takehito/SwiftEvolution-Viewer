@@ -12,13 +12,13 @@ public final class Proposal {
     #Unique<Proposal>([\.proposalID])
 
     /// The proposal identifier, such as "SE-0001".
-    @Attribute(.unique) public var proposalID: String
+    @Attribute(.unique, .spotlight) public var proposalID: String
 
     /// URL path to the proposal's markdown file on GitHub.
     public private(set) var link: String
 
     /// Human-readable proposal title.
-    public private(set) var title: String
+    @Attribute(.spotlight) public private(set) var title: String
 
     // MARK: Relationship
 

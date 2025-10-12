@@ -5,7 +5,7 @@ import SwiftData
 
 /// Retrieves and persists proposal metadata from the Swift Evolution feed.
 @ModelActor
-public actor ProposalRepository {
+public actor ProposalRepository: Observable {
     /// Top-level structure of the `evolution.json` feed.
     private struct V1: Decodable {
         /// All proposals listed in the feed.
@@ -46,13 +46,23 @@ public actor ProposalRepository {
             .flatMap(Proposal.Snapshot.init(object:))
     }
 
+    public func find(by proposalIDs: some Sequence<String>) -> [Proposal.Snapshot] {
+        let results = try? modelContext
+            .fetch(.ids(proposalIDs))
+            .compactMap(Proposal.Snapshot.init(object:))
+        return results ?? []
+    }
+
     /// Loads any proposals already stored in the local database.
     /// - Parameter sortDescriptor: Ordering to apply to the returned results.
     /// - Returns: An array of proposal snapshots from persistent storage.
-    public func load(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) -> [Proposal.Snapshot] {
+    public func load(
+        predicate: Predicate<Proposal> = .true,
+        sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]
+    ) -> [Proposal.Snapshot] {
         do {
             return try modelContext
-                .fetch(FetchDescriptor(predicate: .true, sortBy: sortDescriptor))
+                .fetch(FetchDescriptor(predicate: predicate, sortBy: sortDescriptor))
                 .compactMap(Proposal.Snapshot.init(object:))
         } catch {
             return []

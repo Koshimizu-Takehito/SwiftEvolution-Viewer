@@ -2,8 +2,8 @@ import EvolutionModel
 import SwiftData
 import SwiftUI
 
-struct EnvironmentResolver: ViewModifier {
-    static func modelContainer(isStoredInMemoryOnly: Bool = false) -> ModelContainer {
+public struct EnvironmentResolver: ViewModifier {
+    public nonisolated static func modelContainer(isStoredInMemoryOnly: Bool = false) -> ModelContainer {
         try! ModelContainer(
             for: Proposal.self, Markdown.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)
@@ -16,10 +16,11 @@ struct EnvironmentResolver: ViewModifier {
         self.modelContainer = modelContainer
     }
 
-    func body(content: Content) -> some View {
+    public func body(content: Content) -> some View {
         content
             .modelContainer(modelContainer)
             .environment(ContentViewModel(modelContainer: modelContainer))
             .environment(BookmarkRepository(modelContainer: modelContainer))
+            .environment(ProposalRepository(modelContainer: modelContainer))
     }
 }
