@@ -42,3 +42,33 @@ public actor MarkdownRepository {
         return count ?? 0
     }
 }
+
+@MainActor
+extension MarkdownRepository {
+    /// Downloads and stores the markdown for the given proposal.
+    /// - Parameter proposal: The proposal whose markdown should be fetched.
+    /// - Returns: A snapshot of the stored markdown content.
+    @discardableResult
+    public func fetch(with proposal: Proposal.Snapshot) async throws -> Markdown {
+        let proposalID = proposal.id
+        let url = MarkdownURL(link: proposal.link).rawValue
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let text = (String(data: data, encoding: .utf8) ?? "")
+            .replacingOccurrences(of: "'", with: #"\'"#)
+        let context = modelContainer.mainContext
+        let markdown = Markdown(url: url, proposalID: proposalID, text: text)
+        try context.transaction {
+            context.insert(markdown)
+        }
+        return markdown
+    }
+
+    /// Loads the stored markdown for the specified proposal, if available.
+    /// - Parameter proposal: The proposal whose markdown should be looked up.
+    /// - Returns: A ``Markdown/Snapshot`` when the markdown exists in storage.
+    public func load(with proposal: Proposal.Snapshot) async throws -> Markdown? {
+        let predicate = #Predicate<Markdown> { $0.proposalID == proposal.id }
+        return try modelContainer.mainContext.fetch(FetchDescriptor(predicate: predicate))
+            .first
+    }
+}

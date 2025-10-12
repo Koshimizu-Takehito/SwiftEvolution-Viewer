@@ -15,19 +15,6 @@ public actor BookmarkRepository: Observable {
         return result?.map(Bookmark.Snapshot.init) ?? []
     }
 
-    /// Loads a bookmark for the specified proposal identifier.
-    /// - Parameter proposalID: The identifier of the proposal to look up.
-    /// - Returns: A ``Bookmark/Snapshot`` if one exists, otherwise `nil`.
-    public func load(proposalID: String) -> Bookmark.Snapshot? {
-        let descriptor = FetchDescriptor(predicate: #Predicate<Bookmark> {
-            $0.proposalID == proposalID
-        })
-        let object = try? modelContext
-            .fetch(descriptor)
-            .first
-        return object.flatMap(Bookmark.Snapshot.init(object:))
-    }
-
     /// Adds or removes a bookmark for the given proposal.
     /// - Parameters:
     ///   - proposal: Snapshot of the proposal to modify.
@@ -64,5 +51,28 @@ public actor BookmarkRepository: Observable {
                 context.delete(object)
             }
         }
+    }
+}
+
+@MainActor
+extension BookmarkRepository {
+    /// Returns all stored bookmarks as immutable snapshots.
+    public func snapshots() -> [Bookmark] {
+        do {
+            return try modelContainer.mainContext.fetch(
+                FetchDescriptor<Bookmark>(predicate: .true)
+            )
+        } catch {
+            return []
+        }
+    }
+
+    /// Loads a bookmark for the specified proposal identifier.
+    /// - Parameter proposalID: The identifier of the proposal to look up.
+    /// - Returns: A ``Bookmark/Snapshot`` if one exists, otherwise `nil`.
+    public func load(proposalID: String) -> Bookmark? {
+        return try? modelContainer.mainContext
+            .fetch(.init(predicate: #Predicate<Bookmark> { $0.proposalID == proposalID }))
+            .first
     }
 }

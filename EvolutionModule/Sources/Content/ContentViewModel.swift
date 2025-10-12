@@ -52,7 +52,7 @@ final class ContentViewModel {
         downloadProgress = DownloadProgress(total: total, current: currentCount)
         await withThrowingTaskGroup { group in
             for proposal in proposals {
-                if (try? await markdownRepository.load(with: proposal)) == nil {
+                if (try? await markdownRepository.load(with: proposal)) == Markdown?.none {
                     group.addTask { [self] in
                         try await fetch(with: proposal)
                     }
@@ -65,7 +65,7 @@ final class ContentViewModel {
     /// Downloads markdown for a single proposal and advances the progress
     /// counter.
     private func fetch(with proposal: Proposal.Snapshot) async throws {
-        try await markdownRepository.fetch(with: proposal)
+        let _: Markdown? = try await markdownRepository.fetch(with: proposal)
         downloadProgress?.current += 1
     }
 

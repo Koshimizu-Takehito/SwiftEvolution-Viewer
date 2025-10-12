@@ -63,8 +63,8 @@ final class ProposalDetailViewModel: Observable {
     /// Loads cached markdown for the proposal if it has already been
     /// downloaded.
     func loadMarkdown() async {
-        if let markdown = try? await markdownRepository.load(with: proposal) {
-            items = [ProposalDetailRow](markdown: markdown)
+        if let markdown: Markdown.Snapshot = try? await markdownRepository.load(with: proposal) {
+            items = [ProposalDetailRow].init(markdown: markdown)
         }
     }
 
@@ -72,8 +72,8 @@ final class ProposalDetailViewModel: Observable {
     func fetchMarkdown() async {
         fetchError = nil
         do {
-            let markdown = try await markdownRepository.fetch(with: proposal)
-            items = [ProposalDetailRow](markdown: markdown)
+            let markdown: Markdown.Snapshot = try await markdownRepository.fetch(with: proposal)
+            items = [ProposalDetailRow].init(markdown: markdown)
         } catch let error as URLError where error.code == URLError.cancelled {
             return
         } catch is CancellationError {
@@ -85,7 +85,7 @@ final class ProposalDetailViewModel: Observable {
 
     /// Loads the current bookmark state from persistent storage.
     func loadBookmark() async {
-        isBookmarked = (await bookmarkRepository.load(proposalID: proposal.id) != nil)
+        isBookmarked = (bookmarkRepository.load(proposalID: proposal.id) != nil)
     }
 
     /// Persists the bookmark state for this proposal.
