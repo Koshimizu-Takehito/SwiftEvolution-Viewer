@@ -12,7 +12,7 @@ final class ContentViewModel {
     private let markdownRepository: MarkdownRepository
 
     /// All loaded proposals from storage.
-    private var proposals: [Proposal.Snapshot] = [] {
+    private var proposals: [Proposal] = [] {
         didSet {
             Task { [self] in
                 await fetchMarkdowns()
@@ -28,7 +28,7 @@ final class ContentViewModel {
     init(modelContainer: ModelContainer) {
         self.proposalRepository = ProposalRepository(modelContainer: modelContainer)
         self.markdownRepository = MarkdownRepository(modelContainer: modelContainer)
-        Task { proposals = await proposalRepository.load() }
+        proposals = proposalRepository.load()
     }
 
     /// Retrieves the list of proposals from the remote feed and stores them.
@@ -52,9 +52,11 @@ final class ContentViewModel {
         downloadProgress = DownloadProgress(total: total, current: currentCount)
         await withThrowingTaskGroup { group in
             for proposal in proposals {
-                if (try? await markdownRepository.load(with: proposal)) == Markdown?.none {
-                    group.addTask { [self] in
-                        try await fetch(with: proposal)
+                if (try? markdownRepository.load(with: proposal)) == nil {
+                    let proposalID = proposal.proposalID
+                    let link = proposal.link
+                    group.addTask {
+                        try await self.fetch(with: proposalID, link: link)
                     }
                 }
             }
@@ -64,12 +66,8 @@ final class ContentViewModel {
 
     /// Downloads markdown for a single proposal and advances the progress
     /// counter.
-    private func fetch(with proposal: Proposal.Snapshot) async throws {
-        let _: Markdown? = try await markdownRepository.fetch(with: proposal)
+    private func fetch(with proposalID: String, link: String) async throws {
+        try await markdownRepository.fetch(with: proposalID, link: link)
         downloadProgress?.current += 1
-    }
-
-    func load(id: String) async -> Proposal.Snapshot? {
-        await proposalRepository.find(by: id)
     }
 }

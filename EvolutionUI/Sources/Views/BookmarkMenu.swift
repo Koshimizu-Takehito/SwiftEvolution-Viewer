@@ -25,13 +25,8 @@ public struct BookmarkMenu: View {
     }
 
     func toggle() {
-        let snapshot = Proposal.Snapshot(object: proposal)
-        Task {
-            try await repository.update(
-                proposal: snapshot,
-                isBookmarked: !isBookmarked // Toggle Bookmark
-            )
-        }
+        // Toggle Bookmark
+        try? repository.update(id: proposal.proposalID, isBookmarked: !isBookmarked)
     }
 }
 

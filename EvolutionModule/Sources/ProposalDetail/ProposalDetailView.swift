@@ -32,7 +32,7 @@ struct ProposalDetailView {
 }
 
 extension ProposalDetailView {
-    init(_ path: Binding<NavigationPath>, proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
+    init(_ path: Binding<NavigationPath>, proposal: Proposal, modelContainer: ModelContainer) {
         self.init(path: path, viewModel: ProposalDetailViewModel(proposal: proposal, modelContainer: modelContainer))
     }
 }
@@ -120,21 +120,4 @@ extension ProposalDetailView {
                 .show(safari, sender: self)
         #endif
     }
-}
-
-#Preview(traits: .evolution) {
-    @Previewable @Environment(\.modelContext) var context
-    NavigationStack {
-        ProposalDetailView(
-            .constant(NavigationPath()),
-            proposal: .init(
-                id: "SE-0418",
-                link: "0418-inferring-sendable-for-methods.md",
-                status: .init(state: ".accepted"),
-                title: "Inferring Sendable for methods and key path literals"
-            ),
-            modelContainer: context.container
-        )
-    }
-    .colorScheme(.dark)
 }

@@ -16,7 +16,7 @@ final class ProposalDetailViewModel: Observable {
     private let proposalRepository: ProposalRepository
 
     /// The proposal being displayed.
-    let proposal: Proposal.Snapshot
+    private(set) var proposal: Proposal
 
     /// Parsed markdown content for presentation.
     private(set) var items: [ProposalDetailRow] = []
@@ -46,7 +46,7 @@ final class ProposalDetailViewModel: Observable {
 
     /// Creates a view model for the provided proposal using the supplied
     /// `ModelContainer` to access repositories.
-    init(proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
+    init(proposal: Proposal, modelContainer: ModelContainer) {
         self.proposal = proposal
         self.markdownRepository = MarkdownRepository(modelContainer: modelContainer)
         self.bookmarkRepository = BookmarkRepository(modelContainer: modelContainer)
@@ -55,16 +55,14 @@ final class ProposalDetailViewModel: Observable {
             await loadMarkdown()
             await fetchMarkdown()
         }
-        Task {
-            await loadBookmark()
-        }
+        loadBookmark()
     }
 
     /// Loads cached markdown for the proposal if it has already been
     /// downloaded.
     func loadMarkdown() async {
-        if let markdown: Markdown.Snapshot = try? await markdownRepository.load(with: proposal) {
-            items = [ProposalDetailRow].init(markdown: markdown)
+        if let markdown: Markdown = try? markdownRepository.load(with: proposal) {
+            items = [ProposalDetailRow](markdown: markdown)
         }
     }
 
@@ -72,8 +70,10 @@ final class ProposalDetailViewModel: Observable {
     func fetchMarkdown() async {
         fetchError = nil
         do {
-            let markdown: Markdown.Snapshot = try await markdownRepository.fetch(with: proposal)
-            items = [ProposalDetailRow].init(markdown: markdown)
+            let proposalID = proposal.proposalID
+            let link = proposal.link
+            let markdown: Markdown = try await markdownRepository.fetch(with: proposalID, link: link)
+            items = [ProposalDetailRow](markdown: markdown)
         } catch let error as URLError where error.code == URLError.cancelled {
             return
         } catch is CancellationError {
@@ -84,14 +84,14 @@ final class ProposalDetailViewModel: Observable {
     }
 
     /// Loads the current bookmark state from persistent storage.
-    func loadBookmark() async {
-        isBookmarked = (bookmarkRepository.load(proposalID: proposal.id) != nil)
+    func loadBookmark() {
+        isBookmarked = (bookmarkRepository.load(proposalID: proposal.proposalID) != nil)
     }
 
     /// Persists the bookmark state for this proposal.
-    private func save(isBookmarked: Bool) async {
+    private func save(isBookmarked: Bool) {
         let repository = bookmarkRepository
-        try? await repository.update(proposal: proposal, isBookmarked: isBookmarked)
+        try? repository.update(id: proposal.proposalID, isBookmarked: isBookmarked)
     }
 
     /// Translates the markdown contents in place.

@@ -88,7 +88,6 @@ extension ContentView: View {
         let proposal = try? context
             .fetch(.id(selectedId))
             .first
-            .flatMap(Proposal.Snapshot.init(object:))
         if let proposal {
             ProposalDetailView($navigationPath, proposal: proposal, modelContainer: context.container)
         }
