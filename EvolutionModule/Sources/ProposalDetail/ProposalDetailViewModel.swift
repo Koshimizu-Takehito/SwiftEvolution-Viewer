@@ -120,7 +120,7 @@ extension ProposalDetailViewModel {
     }
 
     /// Determines the appropriate action for a tapped URL.
-    func makeURLAction(url: URL) async -> URLAction {
+    func makeURLAction(url: URL) -> URLAction {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return .open(url)
         }
@@ -129,7 +129,7 @@ extension ProposalDetailViewModel {
             guard let match = path.firstMatch(of: /^.+\/swift-evolution\/.*\/(\d+)-.*\.md/) else {
                 break
             }
-            return await makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
+            return makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
 
         case (nil, nil, "") where components.fragment?.isEmpty == false:
             return .scrollTo(id: url.absoluteString)
@@ -138,7 +138,7 @@ extension ProposalDetailViewModel {
             guard let match = path.firstMatch(of: /(\d+)-.*\.md$/) else {
                 break
             }
-            return await makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
+            return makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
 
         default:
             break
@@ -146,7 +146,7 @@ extension ProposalDetailViewModel {
         return .open(url)
     }
 
-    private func makeMarkdown(id: some StringProtocol) async -> Proposal? {
+    private func makeMarkdown(id: some StringProtocol) -> Proposal? {
         proposalRepository.find(by: "SE-\(String(id))")
     }
 }

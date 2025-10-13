@@ -88,15 +88,13 @@ extension ProposalDetailView {
     /// content and routes them to the appropriate destination.
     fileprivate func openURLAction(with proxy: ScrollViewProxy) -> OpenURLAction {
         OpenURLAction { url in
-            Task {
-                switch await viewModel.makeURLAction(url: url) {
-                case .scrollTo(let id):
-                    withAnimation { proxy.scrollTo(id, anchor: .top) }
-                case .showDetail(let proposal):
-                    path.append(proposal)
-                case .open:
-                    showSafariView(url: url)
-                }
+            switch viewModel.makeURLAction(url: url) {
+            case .scrollTo(let id):
+                withAnimation { proxy.scrollTo(id, anchor: .top) }
+            case .showDetail(let proposal):
+                path.append(proposal)
+            case .open:
+                showSafariView(url: url)
             }
             return .discarded
         }
