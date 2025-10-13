@@ -17,13 +17,19 @@ public actor ProposalRepository: Observable {
         URL(string: "https://download.swift.org/swift-evolution/v1/evolution.json")!
     }
 
-    /// Downloads the proposal feed and stores the results.
-    /// - Returns: An array of stored proposal snapshots.
-    @discardableResult
-    public func fetch(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) async throws -> [Proposal.Snapshot] {
-        try await download()
-        return try modelContext.fetch(FetchDescriptor(predicate: .true, sortBy: sortDescriptor))
-            .compactMap(Proposal.Snapshot.init)
+    private func download() async throws {
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let snapshots = try JSONDecoder().decode(V1.self, from: data).proposals
+        let context = modelContext
+        try context.transaction {
+            snapshots.forEach { proposal in
+                if let object = try? context.fetch(.id(proposal.id)).first {
+                    object.update(with: proposal)
+                } else {
+                    context.insert(Proposal(snapshot: proposal))
+                }
+            }
+        }
     }
 
     /// Finds a proposal by its identifier if it exists in storage.
@@ -90,23 +96,6 @@ extension ProposalRepository {
             return try modelContainer.mainContext.fetch(.init(predicate: predicate, sortBy: sortDescriptor))
         } catch {
             return []
-        }
-    }
-}
-
-extension ProposalRepository {
-    private func download() async throws {
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let snapshots = try JSONDecoder().decode(V1.self, from: data).proposals
-        let context = modelContext
-        try context.transaction {
-            snapshots.forEach { proposal in
-                if let object = try? context.fetch(.id(proposal.id)).first {
-                    object.update(with: proposal)
-                } else {
-                    context.insert(Proposal(snapshot: proposal))
-                }
-            }
         }
     }
 }

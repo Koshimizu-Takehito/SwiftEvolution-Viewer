@@ -64,11 +64,6 @@ public enum ReviewState: String, Codable, Hashable, CaseIterable, Sendable, Iden
         self = ReviewState.init(rawValue: proposal.status.state.rawValue) ?? .unknown
     }
 
-    /// Initializes from a ``Proposal/Snapshot`` if the state string matches a known case.
-    public init(proposal: Proposal.Snapshot) {
-        self = ReviewState.init(rawValue: proposal.status.state) ?? .unknown
-    }
-
     /// Provides ordering for states based on their declaration order.
     public static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.order < rhs.order

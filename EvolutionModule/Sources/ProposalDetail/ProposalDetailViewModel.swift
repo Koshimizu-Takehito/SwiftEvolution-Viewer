@@ -40,7 +40,7 @@ final class ProposalDetailViewModel: Observable {
     /// Bookmark state for the proposal.
     var isBookmarked: Bool = false {
         didSet {
-            Task { await save(isBookmarked: isBookmarked) }
+            save(isBookmarked: isBookmarked)
         }
     }
 
@@ -115,7 +115,7 @@ extension ProposalDetailViewModel {
     /// Possible actions triggered by tapping a link within the markdown content.
     enum URLAction {
         case scrollTo(id: String)
-        case showDetail(Proposal.Snapshot)
+        case showDetail(Proposal)
         case open(URL)
     }
 
@@ -146,7 +146,7 @@ extension ProposalDetailViewModel {
         return .open(url)
     }
 
-    private func makeMarkdown(id: some StringProtocol) async -> Proposal.Snapshot? {
-        await proposalRepository.find(by: "SE-\(String(id))")
+    private func makeMarkdown(id: some StringProtocol) async -> Proposal? {
+        proposalRepository.find(by: "SE-\(String(id))")
     }
 }

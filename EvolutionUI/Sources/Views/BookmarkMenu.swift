@@ -33,13 +33,9 @@ public struct BookmarkMenu: View {
 public struct OpenSafariButton: View {
     @Environment(\.openURL) private var openURL
 
-    private let proposal: Proposal.Snapshot
+    private let proposal: Proposal
 
     public init(proposal: Proposal) {
-        self.proposal = Proposal.Snapshot(object: proposal)
-    }
-
-    public init(proposal: Proposal.Snapshot) {
         self.proposal = proposal
     }
 
