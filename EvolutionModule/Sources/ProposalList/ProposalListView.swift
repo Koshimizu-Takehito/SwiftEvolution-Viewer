@@ -44,8 +44,8 @@ extension ProposalListView: View {
     /// Selects the first proposal when running on larger displays.
     func selectFirstItem() {
         #if os(macOS)
-            if selectedId.wrappedValue == nil, let proposal = proposals.first {
-                selectedId.wrappedValue = proposal.proposalID
+            if selectedId?.wrappedValue == nil, let proposal = proposals.first {
+                selectedId?.wrappedValue = proposal.proposalID
             }
         #elseif os(iOS)
             // Provide an initial selection when the split view is displayed side-by-side.

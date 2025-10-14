@@ -24,6 +24,8 @@ struct AppShortcutsProvider: AppIntents.AppShortcutsProvider {
 struct ProposalIntent: AppIntent {
     static var title: LocalizedStringResource { "Open Proposal" }
     static var openAppWhenRun: Bool { true }
+
+    @available(macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, *)
     static var supportedModes: IntentModes { .foreground }
 
     @Parameter(title: "Active Reviews") var proposal: ProposalEntity
