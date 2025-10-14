@@ -13,7 +13,9 @@ struct ProposalDetailToolBar: ToolbarContent {
             Menu("Menu", systemImage: "ellipsis") {
                 OpenSafariButton(proposal: viewModel.proposal)
                 BookmarkButton(isBookmarked: $viewModel.isBookmarked)
-                TranslateButton(isTranslating: viewModel.translating, action: viewModel.translate)
+                if #available(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0, visionOS 26.0, *) {
+                    TranslateButton(isTranslating: viewModel.translating, action: viewModel.translate)
+                }
             }
         }
     }

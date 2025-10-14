@@ -16,7 +16,7 @@ final class ProposalDetailViewModel: Observable {
     private let proposalRepository: ProposalRepository
 
     /// The proposal being displayed.
-    let proposal: Proposal.Snapshot
+    private(set) var proposal: Proposal
 
     /// Parsed markdown content for presentation.
     private(set) var items: [ProposalDetailRow] = []
@@ -40,13 +40,13 @@ final class ProposalDetailViewModel: Observable {
     /// Bookmark state for the proposal.
     var isBookmarked: Bool = false {
         didSet {
-            Task { await save(isBookmarked: isBookmarked) }
+            save(isBookmarked: isBookmarked)
         }
     }
 
     /// Creates a view model for the provided proposal using the supplied
     /// `ModelContainer` to access repositories.
-    init(proposal: Proposal.Snapshot, modelContainer: ModelContainer) {
+    init(proposal: Proposal, modelContainer: ModelContainer) {
         self.proposal = proposal
         self.markdownRepository = MarkdownRepository(modelContainer: modelContainer)
         self.bookmarkRepository = BookmarkRepository(modelContainer: modelContainer)
@@ -55,15 +55,13 @@ final class ProposalDetailViewModel: Observable {
             await loadMarkdown()
             await fetchMarkdown()
         }
-        Task {
-            await loadBookmark()
-        }
+        loadBookmark()
     }
 
     /// Loads cached markdown for the proposal if it has already been
     /// downloaded.
     func loadMarkdown() async {
-        if let markdown = try? await markdownRepository.load(with: proposal) {
+        if let markdown = try? markdownRepository.load(with: proposal) {
             items = [ProposalDetailRow](markdown: markdown)
         }
     }
@@ -72,7 +70,9 @@ final class ProposalDetailViewModel: Observable {
     func fetchMarkdown() async {
         fetchError = nil
         do {
-            let markdown = try await markdownRepository.fetch(with: proposal)
+            let proposalID = proposal.proposalID
+            let link = proposal.link
+            let markdown: Markdown = try await markdownRepository.fetch(with: proposalID, link: link)
             items = [ProposalDetailRow](markdown: markdown)
         } catch let error as URLError where error.code == URLError.cancelled {
             return
@@ -84,14 +84,14 @@ final class ProposalDetailViewModel: Observable {
     }
 
     /// Loads the current bookmark state from persistent storage.
-    func loadBookmark() async {
-        isBookmarked = (await bookmarkRepository.load(proposalID: proposal.id) != nil)
+    func loadBookmark() {
+        isBookmarked = (bookmarkRepository.load(proposalID: proposal.proposalID) != nil)
     }
 
     /// Persists the bookmark state for this proposal.
-    private func save(isBookmarked: Bool) async {
+    private func save(isBookmarked: Bool) {
         let repository = bookmarkRepository
-        try? await repository.update(proposal: proposal, isBookmarked: isBookmarked)
+        try? repository.update(id: proposal.proposalID, isBookmarked: isBookmarked)
     }
 
     /// Translates the markdown contents in place.
@@ -115,12 +115,12 @@ extension ProposalDetailViewModel {
     /// Possible actions triggered by tapping a link within the markdown content.
     enum URLAction {
         case scrollTo(id: String)
-        case showDetail(Proposal.Snapshot)
+        case showDetail(Proposal)
         case open(URL)
     }
 
     /// Determines the appropriate action for a tapped URL.
-    func makeURLAction(url: URL) async -> URLAction {
+    func makeURLAction(url: URL) -> URLAction {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return .open(url)
         }
@@ -129,7 +129,7 @@ extension ProposalDetailViewModel {
             guard let match = path.firstMatch(of: /^.+\/swift-evolution\/.*\/(\d+)-.*\.md/) else {
                 break
             }
-            return await makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
+            return makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
 
         case (nil, nil, "") where components.fragment?.isEmpty == false:
             return .scrollTo(id: url.absoluteString)
@@ -138,7 +138,7 @@ extension ProposalDetailViewModel {
             guard let match = path.firstMatch(of: /(\d+)-.*\.md$/) else {
                 break
             }
-            return await makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
+            return makeMarkdown(id: match.1).map(URLAction.showDetail) ?? .open(url)
 
         default:
             break
@@ -146,7 +146,7 @@ extension ProposalDetailViewModel {
         return .open(url)
     }
 
-    private func makeMarkdown(id: some StringProtocol) async -> Proposal.Snapshot? {
-        await proposalRepository.find(by: "SE-\(String(id))")
+    private func makeMarkdown(id: some StringProtocol) -> Proposal? {
+        proposalRepository.find(by: "SE-\(String(id))")
     }
 }

@@ -28,31 +28,3 @@ public final class Bookmark {
         self.updatedAt = .now
     }
 }
-
-// MARK: - Snapshot
-
-public extension Bookmark {
-    /// Immutable representation of a ``Bookmark`` used for transferring data
-    /// across concurrency domains or persisting to disk.
-    struct Snapshot: Hashable, Codable, Sendable {
-        /// Identifier of the stored model object, if available.
-        public var persistentModelID: PersistentIdentifier?
-
-        /// Unique identifier for the bookmarked proposal.
-        public var proposalID: String
-
-        /// Lightweight snapshot of the associated proposal.
-        public var proposal: Proposal.Snapshot
-
-        /// Timestamp indicating the last update to the bookmark.
-        public var updatedAt: Date
-
-        /// Creates a snapshot from a managed ``Bookmark`` instance.
-        init(object: Bookmark) {
-            persistentModelID = object.persistentModelID
-            proposalID = object.proposalID
-            proposal = Proposal.Snapshot(object: object.proposal)
-            updatedAt = object.updatedAt
-        }
-    }
-}

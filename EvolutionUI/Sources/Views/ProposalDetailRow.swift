@@ -17,7 +17,7 @@ public struct ProposalDetailRow: Hashable, Identifiable {
 
 extension [ProposalDetailRow] {
     /// Creates an array of rows by parsing the proposal's markdown document.
-    public init(markdown: Markdown.Snapshot) {
+    public init(markdown: Markdown) {
         let markdownString = markdown.text ?? ""
         let document = Document(parsing: markdownString)
         var idCount = [String: Int]()

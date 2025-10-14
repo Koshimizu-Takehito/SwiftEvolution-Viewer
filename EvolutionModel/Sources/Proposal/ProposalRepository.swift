@@ -17,10 +17,7 @@ public actor ProposalRepository: Observable {
         URL(string: "https://download.swift.org/swift-evolution/v1/evolution.json")!
     }
 
-    /// Downloads the proposal feed and stores the results.
-    /// - Returns: An array of stored proposal snapshots.
-    @discardableResult
-    public func fetch(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) async throws -> [Proposal.Snapshot] {
+    private func download() async throws {
         let (data, _) = try await URLSession.shared.data(from: url)
         let snapshots = try JSONDecoder().decode(V1.self, from: data).proposals
         let context = modelContext
@@ -33,8 +30,6 @@ public actor ProposalRepository: Observable {
                 }
             }
         }
-        return try context.fetch(FetchDescriptor(predicate: .true, sortBy: sortDescriptor))
-            .compactMap(Proposal.Snapshot.init)
     }
 
     /// Finds a proposal by its identifier if it exists in storage.
@@ -64,6 +59,41 @@ public actor ProposalRepository: Observable {
             return try modelContext
                 .fetch(FetchDescriptor(predicate: predicate, sortBy: sortDescriptor))
                 .compactMap(Proposal.Snapshot.init(object:))
+        } catch {
+            return []
+        }
+    }
+}
+
+@MainActor
+extension ProposalRepository {
+    /// Downloads the proposal feed and stores the results.
+    /// - Returns: An array of stored proposal snapshots.
+    public func fetch(sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) async throws -> [Proposal] {
+        try await download()
+        return try modelContainer.mainContext.fetch(FetchDescriptor(predicate: .true, sortBy: sortDescriptor))
+    }
+
+    /// Finds a proposal by its identifier if it exists in storage.
+    /// - Parameter proposalID: The proposal identifier to search for.
+    public func find(by proposalID: String) -> Proposal? {
+        try? modelContainer.mainContext.fetch(.id(proposalID)).first
+    }
+
+    public func find(by proposalIDs: some Sequence<String>) -> [Proposal] {
+        do {
+            return try modelContainer.mainContext.fetch(.ids(proposalIDs))
+        } catch {
+            return []
+        }
+    }
+
+    /// Loads any proposals already stored in the local database.
+    /// - Parameter sortDescriptor: Ordering to apply to the returned results.
+    /// - Returns: An array of proposal snapshots from persistent storage.
+    public func load(predicate: Predicate<Proposal> = .true, sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]) -> [Proposal] {
+        do {
+            return try modelContainer.mainContext.fetch(.init(predicate: predicate, sortBy: sortDescriptor))
         } catch {
             return []
         }

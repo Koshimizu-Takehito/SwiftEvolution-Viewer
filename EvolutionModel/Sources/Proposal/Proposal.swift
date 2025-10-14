@@ -33,7 +33,7 @@ public final class Proposal {
     // MARK: init
 
     /// Creates a managed proposal instance from a snapshot.
-    public required init(snapshot: Snapshot) {
+    required init(snapshot: Snapshot) {
         self.proposalID = snapshot.id
         self.link = snapshot.link
         self.status = Proposal.Status(snapshot.status)
@@ -42,7 +42,7 @@ public final class Proposal {
 
     /// Updates the stored data using a more recent snapshot.
     @discardableResult
-    public func update(with snapshot: Snapshot) -> Self {
+    func update(with snapshot: Snapshot) -> Self {
         guard proposalID == snapshot.id else {
             return self
         }
@@ -78,7 +78,7 @@ extension Proposal {
             self.start = start
         }
 
-        public init(_ status: Proposal.Snapshot.Status) {
+        init(_ status: Proposal.Snapshot.Status) {
             self.state = State(rawValue: status.state)
             self.version = Version(rawValue: status.version)
             self.end = status.end

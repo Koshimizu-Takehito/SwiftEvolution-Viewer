@@ -30,34 +30,4 @@ public final class Markdown {
         self.proposalID = proposalID
         self.text = text
     }
-
-    /// A snapshot representation of this model used for value semantics.
-    public var snapshot: Snapshot {
-        .init(object: self)
-    }
-}
-
-public extension Markdown {
-    /// Immutable representation of a ``Markdown`` model.
-    struct Snapshot: Hashable, Codable, Sendable {
-        /// Identifier of the underlying model object, if persisted.
-        public var persistentModelID: PersistentIdentifier?
-
-        /// Remote location of the markdown file.
-        public var url: URL
-
-        /// The related proposal's identifier.
-        public var proposalID: String
-
-        /// Markdown text if it has been fetched.
-        public var text: String?
-
-        /// Creates a snapshot from a ``Markdown`` instance.
-        init(object: Markdown) {
-            persistentModelID = object.persistentModelID
-            url = object.url
-            proposalID = object.proposalID
-            text = object.text
-        }
-    }
 }

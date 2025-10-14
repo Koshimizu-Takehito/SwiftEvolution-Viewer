@@ -66,7 +66,7 @@ extension ContentView: View {
                         NavigationStack(path: $navigationPath) {
                             detail(selectedId: selectedId)
                         }
-                        .navigationDestination(for: Proposal.Snapshot.self) { proposal in
+                        .navigationDestination(for: Proposal.self) { proposal in
                             // Destination
                             detail(selectedId: selectedId)
                         }
@@ -88,7 +88,6 @@ extension ContentView: View {
         let proposal = try? context
             .fetch(.id(selectedId))
             .first
-            .flatMap(Proposal.Snapshot.init(object:))
         if let proposal {
             ProposalDetailView($navigationPath, proposal: proposal, modelContainer: context.container)
         }
