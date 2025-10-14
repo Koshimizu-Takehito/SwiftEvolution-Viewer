@@ -30,7 +30,7 @@ struct ProposalIntent: AppIntent {
 
     @Parameter(title: "Active Reviews") var proposal: ProposalEntity
 
-    func perform() async throws -> some IntentResult {
+    @MainActor func perform() async throws -> some IntentResult {
         let defaults = UserDefaults.standard
         let tab = ContentRootTab.proposal.rawValue
         defaults.set(tab, forKey: "ContentRootView.selection")
