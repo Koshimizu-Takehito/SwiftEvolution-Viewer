@@ -31,38 +31,6 @@ public actor ProposalRepository: Observable {
             }
         }
     }
-
-    /// Finds a proposal by its identifier if it exists in storage.
-    /// - Parameter proposalID: The proposal identifier to search for.
-    public func find(by proposalID: String) -> Proposal.Snapshot? {
-        try? modelContext
-            .fetch(.id(proposalID))
-            .first
-            .flatMap(Proposal.Snapshot.init(object:))
-    }
-
-    public func find(by proposalIDs: some Sequence<String>) -> [Proposal.Snapshot] {
-        let results = try? modelContext
-            .fetch(.ids(proposalIDs))
-            .compactMap(Proposal.Snapshot.init(object:))
-        return results ?? []
-    }
-
-    /// Loads any proposals already stored in the local database.
-    /// - Parameter sortDescriptor: Ordering to apply to the returned results.
-    /// - Returns: An array of proposal snapshots from persistent storage.
-    public func load(
-        predicate: Predicate<Proposal> = .true,
-        sortBy sortDescriptor: [SortDescriptor<Proposal>] = [.proposalID]
-    ) -> [Proposal.Snapshot] {
-        do {
-            return try modelContext
-                .fetch(FetchDescriptor(predicate: predicate, sortBy: sortDescriptor))
-                .compactMap(Proposal.Snapshot.init(object:))
-        } catch {
-            return []
-        }
-    }
 }
 
 @MainActor

@@ -30,7 +30,6 @@ struct ProposalIntent: AppIntent {
 
     @Parameter(title: "Active Reviews") var proposal: ProposalEntity
 
-    @MainActor
     func perform() async throws -> some IntentResult {
         let defaults = UserDefaults.standard
         let tab = ContentRootTab.proposal.rawValue
@@ -54,9 +53,9 @@ struct ProposalEntity: AppEntity, Identifiable {
         DisplayRepresentation(title: "\(proposalId) \(title)")
     }
 
-    nonisolated init(model: Proposal.Snapshot) {
-        self.id = .init(rawValue: model.id)
-        self.proposalId = model.id
+    nonisolated init(model: Proposal) {
+        self.id = .init(rawValue: model.proposalID)
+        self.proposalId = model.proposalID
         self.title = model.title
     }
 }
@@ -68,27 +67,32 @@ struct ProposalQuery: EntityQuery {
         modelContainer: EnvironmentResolver.modelContainer()
     )
 
-    @concurrent func entities(for identifiers: [ProposalID]) async throws -> [ProposalEntity] {
+    @MainActor
+    func entities(for identifiers: [ProposalID]) async throws -> [ProposalEntity] {
         let ids = identifiers.map(\.id)
-        return await repository.find(by: ids).map(ProposalEntity.init(model:))
+        return repository.find(by: ids).map(ProposalEntity.init(model:))
     }
 
-    @concurrent func suggestedEntities() async throws -> [ProposalEntity] {
-        await activeReviews()
+    @MainActor
+    func suggestedEntities() async throws -> [ProposalEntity] {
+        activeReviews()
     }
 
-    @concurrent func defaultResult() async -> ProposalEntity? {
-        await activeReviews().last
+    @MainActor
+    func defaultResult() async -> ProposalEntity? {
+        activeReviews().last
     }
 
-    private func activeReviews() async -> [ProposalEntity] {
-        await repository.load(predicate: .states(.activeReview))
+    @MainActor
+    private func activeReviews() -> [ProposalEntity] {
+        repository.load(predicate: .states(.activeReview))
             .map(ProposalEntity.init(model:))
     }
 }
 
 // MARK: - ProposalID
 
+nonisolated
 struct ProposalID: EntityIdentifierConvertible, RawRepresentable, Hashable, Identifiable, Sendable, CustomStringConvertible {
     var rawValue: String
 
