@@ -70,14 +70,6 @@ extension Proposal {
         /// The start date for the proposal's review period.
         public private(set) var start: String?
 
-        /// Creates a new status description.
-        public init(state: String, version: String? = nil, end: String? = nil, start: String? = nil) {
-            self.state = State(rawValue: state)
-            self.version = Version(rawValue: version)
-            self.end = end
-            self.start = start
-        }
-
         init(_ status: Proposal.Snapshot.Status) {
             self.state = State(rawValue: status.state)
             self.version = Version(rawValue: status.version)
