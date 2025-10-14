@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Xcode 26
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.0.1'
+
+      - name: Install xcpretty
+        run: gem install xcpretty
+
+      - name: List available simulators
+        run: xcrun simctl list devices
+
+      - name: Build SwiftEvolution app
+        run: |
+          xcodebuild -project SwiftEvolution.xcodeproj -scheme App \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=26.0' \
+            CODE_SIGNING_ALLOWED=NO clean build | xcpretty
+
+      - name: Build Swift Packages
+        run: |
+          swift build --package-path EvolutionModel
+          swift build --package-path EvolutionUI  
+          swift build --package-path EvolutionModule
+
+      - name: Run Swift Package Tests
+        run: |
+          swift test --package-path EvolutionModel
+          swift test --package-path EvolutionUI
+          swift test --package-path EvolutionModule
