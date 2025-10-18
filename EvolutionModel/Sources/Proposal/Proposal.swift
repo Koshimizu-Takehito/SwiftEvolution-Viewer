@@ -8,7 +8,7 @@ import SwiftData
 /// Each proposal has an identifier, a link to its markdown content, a status,
 /// and a human-readable title. Proposals may also be bookmarked by the user.
 @Model
-public final class Proposal {
+public final class Proposal: CustomStringConvertible {
     #Unique<Proposal>([\.proposalID])
 
     /// The proposal identifier, such as "SE-0001".
@@ -51,6 +51,15 @@ public final class Proposal {
         self.title = snapshot.title.trimmingCharacters(in: .whitespaces)
         return self
     }
+
+    public var description: String {
+        """
+        proposalID: \(proposalID)
+        title: \(title)
+        link: \(link)
+        status: \(status)
+        """
+    }
 }
 
 // MARK: - Relationship
@@ -58,7 +67,7 @@ public final class Proposal {
 extension Proposal {
     /// Metadata describing the review lifecycle of a proposal.
     @Model
-    public final class Status {
+    public final class Status: CustomStringConvertible {
         /// Raw state string such as "activeReview" or "accepted".
         @Relationship(deleteRule: .cascade)
         public private(set) var state: State
@@ -76,10 +85,17 @@ extension Proposal {
             self.end = status.end
             self.start = status.start
         }
+
+        public var description: String {
+            """
+            state: \(state)
+            version: \(version)
+            """
+        }
     }
 
     @Model
-    public final class State {
+    public final class State: CustomStringConvertible {
         public private(set) var rawValue: String
         public private(set) var title: String
         public private(set) var order: Int
@@ -90,10 +106,17 @@ extension Proposal {
             self.order = state.order
             self.title = state.description
         }
+
+        public var description: String {
+            """
+            title: \(title)
+            order: \(order)
+            """
+        }
     }
 
     @Model
-    public final class Version {
+    public final class Version: CustomStringConvertible {
         public private(set) var rawValue: String?
         public private(set) var code: Int64
 
@@ -115,6 +138,12 @@ extension Proposal {
             let minor = numbers.popLast() ?? 0
             let patch = numbers.popLast() ?? 0
             return (Int64(major) << 32) | (Int64(minor) << 16) | Int64(patch)
+        }
+
+        public var description: String {
+            """
+            code: \(code)
+            """
         }
     }
 }

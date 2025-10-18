@@ -47,6 +47,10 @@ extension ContentView: View {
                             // Destination
                             detail(selectedId: selectedId)
                         }
+                        .navigationDestination(for: Proposal.self) { proposal in
+                            // Destination
+                            detail(selectedId: proposal.proposalID)
+                        }
                         .onChange(of: selectedId, initial: true) { _, newValue in
                             if let newValue {
                                 navigationPath.append(newValue)
