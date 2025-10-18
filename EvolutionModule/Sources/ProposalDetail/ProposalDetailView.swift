@@ -32,8 +32,11 @@ struct ProposalDetailView {
 }
 
 extension ProposalDetailView {
-    init(_ path: Binding<NavigationPath>, proposal: Proposal, modelContainer: ModelContainer) {
-        self.init(path: path, viewModel: ProposalDetailViewModel(proposal: proposal, modelContainer: modelContainer))
+    init?(_ path: Binding<NavigationPath>, proposal: Proposal) {
+        guard let viewModel = ProposalDetailViewModel(proposal: proposal) else {
+            return nil
+        }
+        self.init(path: path, viewModel: viewModel)
     }
 }
 

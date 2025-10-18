@@ -22,13 +22,27 @@ struct ProposalListView {
 
 extension ProposalListView: View {
     var body: some View {
-        List(proposals, selection: selectedId) { proposal in
-            NavigationLink(value: proposal.proposalID) {
-                ProposalListCell(proposal: proposal)
-            }
-            .contextMenu {
-                OpenSafariButton(proposal: proposal)
-                BookmarkMenu(proposal: proposal)
+        Group {
+            if let selectedId {
+                List(proposals, selection: selectedId) { proposal in
+                    NavigationLink(value: proposal.proposalID) {
+                        ProposalListCell(proposal: proposal)
+                    }
+                    .contextMenu {
+                        OpenSafariButton(proposal: proposal)
+                        BookmarkMenu(proposal: proposal)
+                    }
+                }
+            } else {
+                List(proposals) { proposal in
+                    NavigationLink(value: proposal) {
+                        ProposalListCell(proposal: proposal)
+                    }
+                    .contextMenu {
+                        OpenSafariButton(proposal: proposal)
+                        BookmarkMenu(proposal: proposal)
+                    }
+                }
             }
         }
         .overlay {
