@@ -46,7 +46,10 @@ final class ProposalDetailViewModel: Observable {
 
     /// Creates a view model for the provided proposal using the supplied
     /// `ModelContainer` to access repositories.
-    init(proposal: Proposal, modelContainer: ModelContainer) {
+    init?(proposal: Proposal) {
+        guard let modelContainer = proposal.modelContext?.container else {
+            return nil
+        }
         self.proposal = proposal
         self.markdownRepository = MarkdownRepository(modelContainer: modelContainer)
         self.bookmarkRepository = BookmarkRepository(modelContainer: modelContainer)
@@ -72,7 +75,7 @@ final class ProposalDetailViewModel: Observable {
         do {
             let proposalID = proposal.proposalID
             let link = proposal.link
-            let markdown: Markdown = try await markdownRepository.fetch(with: proposalID, link: link)
+            let markdown = try await markdownRepository.fetch(with: proposalID, link: link)
             items = [ProposalDetailRow](markdown: markdown)
         } catch let error as URLError where error.code == URLError.cancelled {
             return

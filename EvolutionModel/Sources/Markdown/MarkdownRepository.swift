@@ -24,11 +24,16 @@ extension MarkdownRepository {
         let text = (String(data: data, encoding: .utf8) ?? "")
             .replacingOccurrences(of: "'", with: #"\'"#)
         let context = modelContainer.mainContext
-        let markdown = Markdown(url: url, proposalID: proposalID, text: text)
         try context.transaction {
-            context.insert(markdown)
+            if let markdown = try? self.load(proposalID: proposalID, url: url) {
+                if markdown.text != text {
+                    markdown.text = text
+                }
+            } else {
+                context.insert(Markdown(url: url, proposalID: proposalID, text: text))
+            }
         }
-        return markdown
+        return try load(proposalID: proposalID, url: url)!
     }
 
     /// Loads the stored markdown for the specified proposal, if available.
@@ -37,6 +42,12 @@ extension MarkdownRepository {
     public func load(with proposal: Proposal) throws -> Markdown? {
         let proposalID = proposal.proposalID
         let predicate = #Predicate<Markdown> { $0.proposalID == proposalID }
+        return try modelContainer.mainContext.fetch(FetchDescriptor(predicate: predicate))
+            .first
+    }
+
+    private func load(proposalID: String, url: URL) throws -> Markdown? {
+        let predicate = #Predicate<Markdown> { $0.proposalID == proposalID && $0.url == url }
         return try modelContainer.mainContext.fetch(FetchDescriptor(predicate: predicate))
             .first
     }

@@ -43,13 +43,9 @@ extension ContentView: View {
             case .compact:
                 NavigationStack(path: $navigationPath) {
                     ProposalListView(query: query)
-                        .navigationDestination(for: String.self) { selectedId in
-                            // Destination
-                            detail(selectedId: selectedId)
-                        }
                         .navigationDestination(for: Proposal.self) { proposal in
                             // Destination
-                            detail(selectedId: proposal.proposalID)
+                            detail(proposal: proposal)
                         }
                         .onChange(of: selectedId, initial: true) { _, newValue in
                             if let newValue {
@@ -72,7 +68,7 @@ extension ContentView: View {
                         }
                         .navigationDestination(for: Proposal.self) { proposal in
                             // Destination
-                            detail(selectedId: selectedId)
+                            detail(proposal: proposal)
                         }
                         .id(selectedId)
                     }
@@ -89,12 +85,15 @@ extension ContentView: View {
     /// Builds the actual detail view for a proposal.
     @ViewBuilder
     func detail(selectedId: String) -> some View {
-        let proposal = try? context
-            .fetch(.id(selectedId))
-            .first
+        let proposal = try? context.fetch(.id(selectedId)).first
         if let proposal {
-            ProposalDetailView($navigationPath, proposal: proposal, modelContainer: context.container)
+            ProposalDetailView($navigationPath, proposal: proposal)
         }
+    }
+
+    @ViewBuilder
+    func detail(proposal: Proposal) -> some View {
+        ProposalDetailView($navigationPath, proposal: proposal)
     }
 }
 
