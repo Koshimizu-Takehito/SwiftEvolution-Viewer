@@ -6,25 +6,35 @@
 1. 現在のブランチと派生元ブランチを確認する
    - `git branch --show-current` で現在のブランチを確認
    - `git remote -v` でリモートリポジトリを確認
-   - `git log --oneline --graph --decorate -10` で最近のコミット履歴を確認
+   - `BASE=$(git merge-base --fork-point origin/main HEAD 2>/dev/null || echo origin/main)` で基点を設定
+   - `git log --oneline "$BASE"..HEAD --graph --decorate` でコミット履歴を確認
+   - git diff "$BASE"..HEAD で差分を確認
 
 2. プルリクエストのタイトルと説明を作成する
-   - タイトルは **Conventional Commits** のフォーマットに**必ず**従うこと
-   - 説明は**変更の背景・理由（Why）** と **影響範囲** を中心に記載
+   - タイトル、説明はともにかならず **英文** で作成
+   - 説明は `.github/pull_request_template.md` のフォーマットに**必ず**従うこと
+   - **Summary / 概要**、**Changes / 変更点**、**Motivation & Context / 背景・目的** を中心に記載
    - **1行あたり 72 文字前後**を目安（CLI やメール連携での可読性向上のため）
-   - 必要に応じて **関連 Issue/PR**、**ブレイキングチェンジ**、**移行手順** などを記載
 
 3. GitHub CLI を使用してプルリクエストを作成する
    ```zsh
    gh pr create \
      --title "feat: add new feature" \
-     --body "## 概要
-   - 新機能の追加
-   - パフォーマンスの改善
-   - ユーザビリティの向上" \
+     --body "## Summary / 概要
+   Brief description of the changes
+
+   ## Changes / 変更点
+   - Added new feature X
+   - Improved performance of Y
+   - Updated documentation for Z
+
+   ## Motivation & Context / 背景・目的
+   - Why this change was necessary
+   - What problem it solves
+   - How it improves the codebase" \
      --base main
    ```
 
 4. 作成されたプルリクエストのURLを表示する
+   - `gh pr list --state open --limit 1 --json url --jq '.[0].url'` でプルリクエストのURLを出力する
    - `gh pr view --web` でブラウザでプルリクエストを開く
-   - または `gh pr list` でプルリクエスト一覧を確認
